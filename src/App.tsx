@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 
 import { Badge, Button, NativeSelect } from "@moritzbrantner/ui";
 import { PointMap, type PointMapFeature } from "@moritzbrantner/maps";
@@ -12,40 +13,101 @@ import {
 } from "./sources";
 
 type SourceFilter = SourceKind | "all";
+type TimelineMode = "discovery" | "source";
 type HistoricalSourceFeature = PointMapFeature<HistoricalSource["properties"]>;
+
+const discoveryYears = historicalSources.map((source) => source.properties.discoveredYear);
+const earliestDiscoveryYear = Math.min(...discoveryYears);
+const latestDiscoveryYear = Math.max(...discoveryYears);
+const sourceYears = historicalSources.map((source) => source.properties.sourceYear);
+const earliestSourceYear = Math.min(...sourceYears);
+const latestSourceYear = Math.max(...sourceYears);
+
+const timelineModes: Record<
+  TimelineMode,
+  {
+    label: string;
+    maxYear: number;
+    minYear: number;
+    title: string;
+  }
+> = {
+  discovery: {
+    label: "Discovery time",
+    maxYear: latestDiscoveryYear,
+    minYear: earliestDiscoveryYear,
+    title: "Sources known by",
+  },
+  source: {
+    label: "Source date",
+    maxYear: latestSourceYear,
+    minYear: earliestSourceYear,
+    title: "Sources dated by",
+  },
+};
 
 export function App() {
   const [selectedSourceId, setSelectedSourceId] = useState("dead-sea-scrolls");
   const [kindFilter, setKindFilter] = useState<SourceFilter>("all");
   const [query, setQuery] = useState("");
+  const [timelineMode, setTimelineMode] = useState<TimelineMode>("discovery");
+  const mapPanelRef = useRef<HTMLDivElement | null>(null);
+  const visibleSourcesRef = useRef<HistoricalSource[]>([]);
+  const [timelineYears, setTimelineYears] = useState<Record<TimelineMode, number>>({
+    discovery: latestDiscoveryYear,
+    source: latestSourceYear,
+  });
+  const timelineYear = timelineYears[timelineMode];
+  const activeTimelineMode = timelineModes[timelineMode];
+  const selectedSourceClassName = "ring-2 ring-teal-600 ring-offset-1 ring-offset-white shadow-sm";
 
   const visibleSources = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
     return historicalSources.filter((source) => {
       const matchesKind = kindFilter === "all" || source.properties.kind === kindFilter;
+      const matchesTimeline = getTimelineYear(source, timelineMode) <= timelineYear;
       const matchesQuery =
         normalizedQuery.length === 0 ||
         [
           source.label,
+          source.properties.discovered,
           source.properties.location,
           source.properties.period,
+          source.properties.references,
+          source.properties.referencedIn,
           source.properties.region,
           source.properties.summary,
-        ].some((value) => value.toLowerCase().includes(normalizedQuery));
+        ]
+          .flatMap((value) =>
+            Array.isArray(value)
+              ? value.flatMap((entry) => [entry.label, entry.note, entry.relation])
+              : [value],
+          )
+          .some((value) => value.toLowerCase().includes(normalizedQuery));
 
-      return matchesKind && matchesQuery;
+      return matchesKind && matchesTimeline && matchesQuery;
     });
-  }, [kindFilter, query]);
+  }, [kindFilter, query, timelineMode, timelineYear]);
+
+  const sortedVisibleSources = useMemo(
+    () =>
+      [...visibleSources].sort(
+        (a, b) =>
+          getTimelineYear(a, timelineMode) - getTimelineYear(b, timelineMode) ||
+          a.label.localeCompare(b.label),
+      ),
+    [timelineMode, visibleSources],
+  );
 
   const selectedSource =
-    visibleSources.find((source) => source.id === selectedSourceId) ??
-    visibleSources[0] ??
-    historicalSources[0]!;
+    visibleSources.find((source) => source.id === selectedSourceId) ?? sortedVisibleSources[0];
 
   const sourceStats = useMemo(() => {
     const regions = new Set(visibleSources.map((source) => source.properties.region));
-    const manuscripts = visibleSources.filter((source) => source.properties.kind === "manuscript").length;
+    const manuscripts = visibleSources.filter(
+      (source) => source.properties.kind === "manuscript",
+    ).length;
 
     return {
       manuscripts,
@@ -53,6 +115,66 @@ export function App() {
       total: visibleSources.length,
     };
   }, [visibleSources]);
+
+  useEffect(() => {
+    visibleSourcesRef.current = visibleSources;
+  }, [visibleSources]);
+
+  const selectSource = useCallback((sourceId: string) => {
+    flushSync(() => {
+      setSelectedSourceId(sourceId);
+    });
+  }, []);
+
+  const selectNearestSourceAtPoint = useCallback(
+    (panel: HTMLElement, clientX: number, clientY: number) => {
+      const markers = Array.from(panel.querySelectorAll<SVGElement>(".mb-maps__point-marker"));
+      let nearestMarkerIndex = -1;
+      let nearestDistance = Number.POSITIVE_INFINITY;
+
+      markers.forEach((marker, index) => {
+        const rect = marker.getBoundingClientRect();
+        const markerCenterX = rect.left + rect.width / 2;
+        const markerCenterY = rect.top + rect.height / 2;
+        const markerRadius = Math.max(rect.width, rect.height) / 2;
+        const distance = Math.hypot(markerCenterX - clientX, markerCenterY - clientY);
+
+        if (distance <= markerRadius + 8 && distance < nearestDistance) {
+          nearestDistance = distance;
+          nearestMarkerIndex = index;
+        }
+      });
+
+      const nearestSource = visibleSourcesRef.current[nearestMarkerIndex];
+
+      if (nearestSource) {
+        selectSource(nearestSource.id);
+      }
+    },
+    [selectSource],
+  );
+
+  useEffect(() => {
+    const panel = mapPanelRef.current;
+
+    if (!panel) {
+      return;
+    }
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if ((event.target as Element | null)?.closest(".leaflet-control")) {
+        return;
+      }
+
+      selectNearestSourceAtPoint(panel, event.clientX, event.clientY);
+    };
+
+    panel.addEventListener("pointerdown", handlePointerDown, true);
+
+    return () => {
+      panel.removeEventListener("pointerdown", handlePointerDown, true);
+    };
+  }, [selectNearestSourceAtPoint]);
 
   return (
     <main className="source-app">
@@ -91,8 +213,20 @@ export function App() {
         </div>
       </header>
 
+      <TimelineControl
+        mode={timelineMode}
+        maxYear={activeTimelineMode.maxYear}
+        minYear={activeTimelineMode.minYear}
+        onModeChange={setTimelineMode}
+        sourceCount={visibleSources.length}
+        timelineYear={timelineYear}
+        onTimelineYearChange={(year) => {
+          setTimelineYears((current) => ({ ...current, [timelineMode]: year }));
+        }}
+      />
+
       <section className="source-layout" aria-label="Historical source map">
-        <div className="source-map-panel">
+        <div className="source-map-panel" ref={mapPanelRef}>
           <PointMap
             fitToData={false}
             getFeatureId={(feature) => feature.point.id}
@@ -102,13 +236,13 @@ export function App() {
             mapLabel="Map of historical source discovery locations"
             onFeatureSelect={(feature) => {
               if (feature) {
-                setSelectedSourceId(feature.point.id);
+                selectSource(feature.point.id);
               }
             }}
             points={visibleSources}
             renderFeaturePopup={(feature) => <SourcePopup feature={feature} />}
             renderFeatureTooltip={(feature) => feature.point.label}
-            selectedFeatureId={selectedSource.id}
+            selectedFeatureId={selectedSource?.id ?? null}
             style={{ minHeight: 620 }}
           />
           <div className="source-legend" aria-label="Map legend">
@@ -133,17 +267,21 @@ export function App() {
           <section className="source-list" aria-label="Source list">
             <h2>Sources</h2>
             <div>
-              {visibleSources.map((source) => (
+              {sortedVisibleSources.map((source) => (
                 <Button
                   key={source.id}
                   type="button"
-                  variant={source.id === selectedSource.id ? "default" : "secondary"}
+                  variant={source.id === selectedSource?.id ? "default" : "secondary"}
+                  aria-pressed={source.id === selectedSource?.id}
+                  {...(source.id === selectedSource?.id
+                    ? { className: selectedSourceClassName }
+                    : {})}
                   onClick={() => {
-                    setSelectedSourceId(source.id);
+                    selectSource(source.id);
                   }}
                 >
                   <span>{source.label}</span>
-                  <small>{source.properties.discovered}</small>
+                  <small>{getTimelineLabel(source, timelineMode)}</small>
                 </Button>
               ))}
             </div>
@@ -151,6 +289,86 @@ export function App() {
         </aside>
       </section>
     </main>
+  );
+}
+
+function TimelineControl({
+  maxYear,
+  minYear,
+  mode,
+  onModeChange,
+  onTimelineYearChange,
+  sourceCount,
+  timelineYear,
+}: {
+  maxYear: number;
+  minYear: number;
+  mode: TimelineMode;
+  onModeChange: (mode: TimelineMode) => void;
+  onTimelineYearChange: (year: number) => void;
+  sourceCount: number;
+  timelineYear: number;
+}) {
+  const activeTimelineMode = timelineModes[mode];
+
+  return (
+    <section className="source-timeline" aria-label="Timeline controls">
+      <div className="source-timeline__header">
+        <div>
+          <span>{activeTimelineMode.label} timeline</span>
+          <strong>
+            {activeTimelineMode.title} {formatTimelineYear(timelineYear, mode)}
+          </strong>
+        </div>
+        <Badge>{sourceCount} visible</Badge>
+      </div>
+      <label className="source-timeline__mode">
+        <span>Use</span>
+        <NativeSelect
+          value={mode}
+          onChange={(event) => {
+            onModeChange(event.target.value as TimelineMode);
+          }}
+        >
+          <option value="discovery">Discovery time</option>
+          <option value="source">Source date</option>
+        </NativeSelect>
+      </label>
+      <label className="source-timeline__slider">
+        <span>{formatTimelineYear(minYear, mode)}</span>
+        <input
+          type="range"
+          min={minYear}
+          max={maxYear}
+          step={1}
+          value={timelineYear}
+          onChange={(event) => {
+            onTimelineYearChange(Number(event.target.value));
+          }}
+        />
+        <span>{formatTimelineYear(maxYear, mode)}</span>
+      </label>
+      <div className="source-timeline__actions">
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => {
+            onTimelineYearChange(minYear);
+          }}
+        >
+          Start
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => {
+            onTimelineYearChange(maxYear);
+          }}
+        >
+          Show all
+        </Button>
+      </div>
+    </section>
   );
 }
 
@@ -163,7 +381,16 @@ function Stat({ label, value }: { label: string; value: number }) {
   );
 }
 
-function SourceDetail({ source }: { source: HistoricalSource }) {
+function SourceDetail({ source }: { source: HistoricalSource | undefined }) {
+  if (!source) {
+    return (
+      <section className="source-detail source-empty">
+        <h2>No sources visible</h2>
+        <p>Move the timeline forward or adjust the type and search filters.</p>
+      </section>
+    );
+  }
+
   return (
     <section className="source-detail">
       <div className="source-detail__header">
@@ -172,7 +399,7 @@ function SourceDetail({ source }: { source: HistoricalSource }) {
       </div>
       <h2>{source.label}</h2>
       <p>{source.properties.summary}</p>
-      <dl>
+      <dl className="source-detail__facts">
         <div>
           <dt>Found</dt>
           <dd>{source.properties.location}</dd>
@@ -190,6 +417,35 @@ function SourceDetail({ source }: { source: HistoricalSource }) {
           <dd>{source.properties.currentRepository}</dd>
         </div>
       </dl>
+      <section className="source-detail__section">
+        <h3>How and where it was found</h3>
+        <p>{source.properties.discoveryContext}</p>
+      </section>
+      <SourceRelationList title="Where it is referenced" items={source.properties.referencedIn} />
+      <SourceRelationList title="What it references" items={source.properties.references} />
+    </section>
+  );
+}
+
+function SourceRelationList({
+  items,
+  title,
+}: {
+  items: HistoricalSource["properties"]["references"];
+  title: string;
+}) {
+  return (
+    <section className="source-detail__section">
+      <h3>{title}</h3>
+      <ul className="source-relations">
+        {items.map((item) => (
+          <li key={`${item.relation}-${item.label}`}>
+            <strong>{item.label}</strong>
+            <span>{item.relation}</span>
+            <p>{item.note}</p>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -208,4 +464,24 @@ function SourcePopup({ feature }: { feature: HistoricalSourceFeature }) {
 
 function getFeatureProperties(feature: HistoricalSourceFeature) {
   return feature.point.properties ?? historicalSources[0]!.properties;
+}
+
+function getTimelineYear(source: HistoricalSource, mode: TimelineMode) {
+  return mode === "discovery" ? source.properties.discoveredYear : source.properties.sourceYear;
+}
+
+function getTimelineLabel(source: HistoricalSource, mode: TimelineMode) {
+  return mode === "discovery" ? source.properties.discovered : source.properties.period;
+}
+
+function formatTimelineYear(year: number, mode: TimelineMode) {
+  if (mode === "discovery") {
+    return `${year}`;
+  }
+
+  if (year < 0) {
+    return `${Math.abs(year)} BC`;
+  }
+
+  return `${year} AD`;
 }
