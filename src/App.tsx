@@ -14,6 +14,14 @@ import {
 
 type SourceFilter = SourceKind | "all";
 type TimelineMode = "discovery" | "source";
+type PageRoute =
+  | {
+      view: "atlas";
+    }
+  | {
+      sourceId: string;
+      view: "source";
+    };
 type HistoricalSourceFeature = PointMapFeature<HistoricalSource["properties"]>;
 
 const discoveryYears = historicalSources.map((source) => source.properties.discoveredYear);
@@ -22,6 +30,7 @@ const latestDiscoveryYear = Math.max(...discoveryYears);
 const sourceYears = historicalSources.map((source) => source.properties.sourceYear);
 const earliestSourceYear = Math.min(...sourceYears);
 const latestSourceYear = Math.max(...sourceYears);
+const sourceById = new Map(historicalSources.map((source) => [source.id, source]));
 
 const timelineModes: Record<
   TimelineMode,
@@ -47,6 +56,7 @@ const timelineModes: Record<
 };
 
 export function App() {
+  const [route, setRoute] = useState<PageRoute>(() => readRoute());
   const [selectedSourceId, setSelectedSourceId] = useState("dead-sea-scrolls");
   const [kindFilter, setKindFilter] = useState<SourceFilter>("all");
   const [query, setQuery] = useState("");
@@ -120,11 +130,39 @@ export function App() {
     visibleSourcesRef.current = visibleSources;
   }, [visibleSources]);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      setRoute(readRoute());
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
+
   const selectSource = useCallback((sourceId: string) => {
     flushSync(() => {
       setSelectedSourceId(sourceId);
     });
   }, []);
+
+  const openAtlas = useCallback(() => {
+    window.history.pushState(null, "", "/");
+    setRoute({ view: "atlas" });
+  }, []);
+
+  const openSourcePage = useCallback(
+    (sourceId: string) => {
+      flushSync(() => {
+        setSelectedSourceId(sourceId);
+        setRoute({ sourceId, view: "source" });
+      });
+      window.history.pushState(null, "", getSourcePath(sourceId));
+    },
+    [setSelectedSourceId],
+  );
 
   const selectNearestSourceAtPoint = useCallback(
     (panel: HTMLElement, clientX: number, clientY: number) => {
@@ -175,6 +213,16 @@ export function App() {
       panel.removeEventListener("pointerdown", handlePointerDown, true);
     };
   }, [selectNearestSourceAtPoint]);
+
+  if (route.view === "source") {
+    return (
+      <SourcePage
+        source={sourceById.get(route.sourceId)}
+        onBackToAtlas={openAtlas}
+        onOpenSource={openSourcePage}
+      />
+    );
+  }
 
   return (
     <main className="source-app">
@@ -262,7 +310,7 @@ export function App() {
             <Stat value={sourceStats.manuscripts} label="manuscripts" />
           </section>
 
-          <SourceDetail source={selectedSource} />
+          <SourceDetail source={selectedSource} onOpenPage={openSourcePage} />
 
           <section className="source-list" aria-label="Source list">
             <h2>Sources</h2>
@@ -381,7 +429,13 @@ function Stat({ label, value }: { label: string; value: number }) {
   );
 }
 
-function SourceDetail({ source }: { source: HistoricalSource | undefined }) {
+function SourceDetail({
+  onOpenPage,
+  source,
+}: {
+  onOpenPage: (sourceId: string) => void;
+  source: HistoricalSource | undefined;
+}) {
   if (!source) {
     return (
       <section className="source-detail source-empty">
@@ -423,6 +477,221 @@ function SourceDetail({ source }: { source: HistoricalSource | undefined }) {
       </section>
       <SourceRelationList title="Where it is referenced" items={source.properties.referencedIn} />
       <SourceRelationList title="What it references" items={source.properties.references} />
+      <div className="source-detail__actions">
+        <Button
+          type="button"
+          onClick={() => {
+            onOpenPage(source.id);
+          }}
+        >
+          Open source page
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+function SourcePage({
+  onBackToAtlas,
+  onOpenSource,
+  source,
+}: {
+  onBackToAtlas: () => void;
+  onOpenSource: (sourceId: string) => void;
+  source: HistoricalSource | undefined;
+}) {
+  if (!source) {
+    return (
+      <main className="source-page source-page--empty">
+        <nav className="source-page__nav" aria-label="Source page navigation">
+          <Button type="button" variant="secondary" onClick={onBackToAtlas}>
+            Back to atlas
+          </Button>
+        </nav>
+        <section className="source-page__not-found">
+          <p className="source-kicker">Source page</p>
+          <h1>Source not found</h1>
+          <p>Select a source from the atlas to open its detailed page.</p>
+          <div className="source-page__quick-list">
+            {historicalSources.map((historicalSource) => (
+              <button
+                key={historicalSource.id}
+                type="button"
+                onClick={() => {
+                  onOpenSource(historicalSource.id);
+                }}
+              >
+                {historicalSource.label}
+              </button>
+            ))}
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  const relatedRegionalSources = historicalSources
+    .filter(
+      (candidate) =>
+        candidate.id !== source.id && candidate.properties.region === source.properties.region,
+    )
+    .slice(0, 3);
+
+  return (
+    <main className="source-page">
+      <nav className="source-page__nav" aria-label="Source page navigation">
+        <Button type="button" variant="secondary" onClick={onBackToAtlas}>
+          Back to atlas
+        </Button>
+        <a href={getSourcePath(source.id)}>{getSourcePath(source.id)}</a>
+      </nav>
+
+      <header className="source-page__hero">
+        <div className="source-page__intro">
+          <div className="source-page__badges">
+            <Badge>{sourceKindLabels[source.properties.kind]}</Badge>
+            <span>{source.properties.region}</span>
+          </div>
+          <h1>{source.label}</h1>
+          <p>{source.properties.summary}</p>
+        </div>
+        <dl className="source-page__facts" aria-label={`${source.label} facts`}>
+          <div>
+            <dt>Location</dt>
+            <dd>{source.properties.location}</dd>
+          </div>
+          <div>
+            <dt>Discovery</dt>
+            <dd>{source.properties.discovered}</dd>
+          </div>
+          <div>
+            <dt>Source date</dt>
+            <dd>{source.properties.period}</dd>
+          </div>
+          <div>
+            <dt>Repository</dt>
+            <dd>{source.properties.currentRepository}</dd>
+          </div>
+        </dl>
+      </header>
+
+      <section className="source-page__grid" aria-label={`${source.label} source page`}>
+        <article className="source-page__main">
+          <section className="source-page__section">
+            <h2>Detailed Information</h2>
+            <p>{source.properties.discoveryContext}</p>
+            <div className="source-page__metrics">
+              <Stat value={source.metrics.importance} label="atlas weight" />
+              <Stat value={source.properties.referencedIn.length} label="referenced by" />
+              <Stat value={source.properties.references.length} label="references" />
+            </div>
+          </section>
+
+          <section className="source-page__section">
+            <h2>Reference Network</h2>
+            <div className="source-network">
+              <ReferenceColumn
+                items={source.properties.referencedIn}
+                title="Referenced by"
+                tone="incoming"
+              />
+              <div className="source-network__node">
+                <span
+                  aria-hidden="true"
+                  style={{ background: sourceKindColors[source.properties.kind] }}
+                />
+                <strong>{source.label}</strong>
+                <p>{source.properties.period}</p>
+              </div>
+              <ReferenceColumn
+                items={source.properties.references}
+                title="References"
+                tone="outgoing"
+              />
+            </div>
+          </section>
+        </article>
+
+        <aside
+          className="source-page__aside"
+          aria-label={`${source.label} map and related sources`}
+        >
+          <section className="source-page__map">
+            <PointMap
+              fitToData={false}
+              getFeatureId={(feature) => feature.point.id}
+              getPointColor={(feature) => sourceKindColors[getFeatureProperties(feature).kind]}
+              getPointRadius={() => 13}
+              initialViewState={{ center: [source.longitude, source.latitude], zoom: 5 }}
+              mapLabel={`${source.label} discovery location`}
+              points={[source]}
+              renderFeaturePopup={(feature) => <SourcePopup feature={feature} />}
+              renderFeatureTooltip={(feature) => feature.point.label}
+              selectedFeatureId={source.id}
+              style={{ minHeight: 330 }}
+            />
+          </section>
+
+          <section className="source-page__section source-page__related">
+            <h2>Atlas Context</h2>
+            <dl>
+              <div>
+                <dt>Region</dt>
+                <dd>{source.properties.region}</dd>
+              </div>
+              <div>
+                <dt>Discovery year</dt>
+                <dd>{source.properties.discoveredYear}</dd>
+              </div>
+              <div>
+                <dt>Source year</dt>
+                <dd>{formatTimelineYear(source.properties.sourceYear, "source")}</dd>
+              </div>
+            </dl>
+            {relatedRegionalSources.length > 0 ? (
+              <div className="source-page__quick-list">
+                {relatedRegionalSources.map((relatedSource) => (
+                  <button
+                    key={relatedSource.id}
+                    type="button"
+                    onClick={() => {
+                      onOpenSource(relatedSource.id);
+                    }}
+                  >
+                    <span>{relatedSource.label}</span>
+                    <small>{relatedSource.properties.period}</small>
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </section>
+        </aside>
+      </section>
+    </main>
+  );
+}
+
+function ReferenceColumn({
+  items,
+  title,
+  tone,
+}: {
+  items: HistoricalSource["properties"]["references"];
+  title: string;
+  tone: "incoming" | "outgoing";
+}) {
+  return (
+    <section className={`source-network__column source-network__column--${tone}`}>
+      <h3>{title}</h3>
+      <ul>
+        {items.map((item) => (
+          <li key={`${title}-${item.relation}-${item.label}`}>
+            <span>{item.relation}</span>
+            <strong>{item.label}</strong>
+            <p>{item.note}</p>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }
@@ -484,4 +753,21 @@ function formatTimelineYear(year: number, mode: TimelineMode) {
   }
 
   return `${year} AD`;
+}
+
+function getSourcePath(sourceId: string) {
+  return `/sources/${sourceId}`;
+}
+
+function readRoute(): PageRoute {
+  const sourceMatch = /^\/sources\/([^/]+)\/?$/.exec(window.location.pathname);
+
+  if (sourceMatch?.[1]) {
+    return {
+      sourceId: decodeURIComponent(sourceMatch[1]),
+      view: "source",
+    };
+  }
+
+  return { view: "atlas" };
 }
