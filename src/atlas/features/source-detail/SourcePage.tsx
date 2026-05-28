@@ -32,6 +32,7 @@ import { MetricStats } from '../../shared/ui/MetricStats';
 import { EmptyState } from '../../shared/ui/EmptyState';
 import { SourcePopup } from '../atlas/AtlasMap';
 import { RelatedSources } from './RelatedSources';
+import { SourceComparison } from './SourceComparison';
 import { SourceFacts } from './SourceFacts';
 import { SourceReferenceNetwork } from './SourceReferenceNetwork';
 
@@ -135,6 +136,11 @@ export function SourcePage({
             </Surface>
 
             <SourceReferenceNetwork source={source} />
+            <SourceComparison
+              source={source}
+              sources={sources}
+              onOpenSource={onOpenSource}
+            />
           </article>
 
           <aside
