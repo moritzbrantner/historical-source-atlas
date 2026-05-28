@@ -134,3 +134,5 @@ export type TextAnnotation = {
   startOffset: number | null;
   textUnitId: string;
 };
+
+export * from "./entityModel";
