@@ -1,6 +1,12 @@
 import type { MapPoint } from "@moritzbrantner/maps";
 
-export type SourceKind = "text" | "artifact" | "inscription" | "manuscript";
+export type SourceKind =
+  | "text"
+  | "artifact"
+  | "inscription"
+  | "manuscript"
+  | "collection"
+  | "archive";
 
 export type SourceRelationship = {
   label: string;
@@ -33,14 +39,18 @@ export type HistoricalSource = MapPoint<HistoricalSourceProperties> & {
 };
 
 export const sourceKindLabels: Record<SourceKind, string> = {
+  archive: "Archive",
   artifact: "Artifact",
+  collection: "Collection",
   inscription: "Inscription",
   manuscript: "Manuscript",
   text: "Text",
 };
 
 export const sourceKindColors: Record<SourceKind, string> = {
+  archive: "#6d28d9",
   artifact: "#b45309",
+  collection: "#be123c",
   inscription: "#475569",
   manuscript: "#0f766e",
   text: "#1d4ed8",
