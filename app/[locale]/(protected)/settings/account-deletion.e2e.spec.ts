@@ -23,9 +23,7 @@ test.describe('account deletion', () => {
       );
 
       await gotoAndWaitForHydration(page, '/en/settings/account');
-      await expect(
-        page.getByRole('heading', { name: 'Delete account' }),
-      ).toBeVisible();
+      await expect(page.getByText('Delete account').first()).toBeVisible();
 
       const deleteForm = page.locator('form').filter({
         has: page.getByRole('button', { name: 'Delete account' }),

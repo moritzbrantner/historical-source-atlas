@@ -14,6 +14,7 @@ import {
 } from '@moritzbrantner/ui';
 
 import { useAtlasSourcesQuery } from '../../entities/source/api/sourceQueries';
+import type { SourceRepository } from '../../entities/source/api/sourceRepository';
 import { AtlasFilters } from './AtlasFilters';
 import { AtlasMap } from './AtlasMap';
 import { AtlasSidebar } from './AtlasSidebar';
@@ -22,10 +23,12 @@ import { useAtlasViewModel } from './model/useAtlasViewModel';
 
 export function AtlasPage({
   onOpenSource,
+  sourceRepository,
 }: {
   onOpenSource: (sourceId: string) => void;
+  sourceRepository?: SourceRepository;
 }) {
-  const sourcesQuery = useAtlasSourcesQuery();
+  const sourcesQuery = useAtlasSourcesQuery(sourceRepository);
   const sources = sourcesQuery.data ?? [];
   const atlas = useAtlasViewModel(sources);
 

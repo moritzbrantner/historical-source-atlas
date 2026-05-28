@@ -37,9 +37,17 @@ declare
   repository_holding_id uuid;
   text_work_entity_id uuid;
 begin
-  if exists (select 1 from entities where slug = p_slug) then
-    return;
-  end if;
+  delete from entities
+  where slug = any(array[
+    p_slug,
+    p_slug || '-place',
+    p_slug || '-discovery',
+    p_slug || '-repository',
+    p_slug || '-object',
+    p_slug || '-inscription',
+    p_slug || '-manuscript',
+    p_slug || '-text-work'
+  ]);
 
   insert into entities (type, slug, preferred_label, summary, editorial_status)
   values ('catalog_record', p_slug, p_label, p_summary, 'published')

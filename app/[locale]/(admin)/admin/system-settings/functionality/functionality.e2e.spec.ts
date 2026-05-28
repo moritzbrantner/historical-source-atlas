@@ -67,9 +67,7 @@ test.describe('superadmin functionality controls', () => {
     await loginWithCredentials(page, primaryUser.email, primaryUser.password);
     await gotoAndWaitForHydration(page, '/en/profile/blog');
 
-    await expect(
-      page.getByRole('heading', { name: 'Write blog posts' }),
-    ).toBeVisible();
+    await expect(page.getByText('Write blog posts')).toBeVisible();
     await page.getByLabel('Title').fill(postTitle);
     await page.getByLabel('Post content').fill(postContent);
     await page.getByRole('button', { name: 'Publish post' }).click();

@@ -42,9 +42,7 @@ test.describe('admin reports', () => {
       page.getByText('Denied and rate-limited actions'),
     ).toBeVisible();
     await expect(page.getByText('Denied actions by endpoint')).toBeVisible();
-    await expect(
-      page.getByRole('heading', { name: 'Recent events' }),
-    ).toBeVisible();
+    await expect(page.getByText('Recent events')).toBeVisible();
 
     await page.getByRole('link', { name: '24h' }).click();
     await expect(page).toHaveURL(/window=24h/);

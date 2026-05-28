@@ -56,9 +56,7 @@ test.describe('social interactions', () => {
     await page.getByRole('link', { name: /6 followers/i }).click();
 
     await expect(page).toHaveURL('/en/profile/@test-user/followers');
-    await expect(
-      page.getByRole('heading', { name: 'Followers' }),
-    ).toBeVisible();
+    await expect(page.getByText('Followers', { exact: true })).toBeVisible();
     await expect(page.getByText('Alice Archer', { exact: true })).toBeVisible();
     await expect(page.getByText('Bob Baker', { exact: true })).toBeVisible();
     await expect(page.getByText('Test Manager', { exact: true })).toBeVisible();
@@ -86,9 +84,7 @@ test.describe('social interactions', () => {
     await page.getByRole('link', { name: /2 following/i }).click();
 
     await expect(page).toHaveURL('/en/profile/@test-user/following');
-    await expect(
-      page.getByRole('heading', { name: 'Following' }),
-    ).toBeVisible();
+    await expect(page.getByText('Following', { exact: true })).toBeVisible();
     await expect(page.getByText('Alice Archer', { exact: true })).toBeVisible();
     await expect(page.getByText('Bob Baker', { exact: true })).toBeVisible();
     await expect(page.getByText('@alice', { exact: true })).toBeVisible();

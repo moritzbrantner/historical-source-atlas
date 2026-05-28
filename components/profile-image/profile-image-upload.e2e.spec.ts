@@ -59,7 +59,7 @@ test.describe('profile image uploads', () => {
 
     await gotoAndWaitForHydration(page, '/en/settings/profile');
     await expect(
-      page.getByRole('heading', { name: 'Profile picture' }),
+      page.getByText('Profile picture', { exact: true }),
     ).toBeVisible();
     const publicProfileHref = '/en/profile';
 

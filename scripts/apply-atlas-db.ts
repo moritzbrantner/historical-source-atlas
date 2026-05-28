@@ -17,6 +17,18 @@ async function applySqlFile(pool: Pool, path: string) {
   await pool.query(sql);
 }
 
+async function applySeedSqlFile(pool: Pool, path: string) {
+  await pool.query('begin');
+
+  try {
+    await applySqlFile(pool, path);
+    await pool.query('commit');
+  } catch (error) {
+    await pool.query('rollback');
+    throw error;
+  }
+}
+
 async function main() {
   const command = process.argv[2];
 
@@ -40,7 +52,12 @@ async function main() {
     }
 
     for (const file of files) {
-      await applySqlFile(pool, file);
+      if (command === 'seed') {
+        await applySeedSqlFile(pool, file);
+      } else {
+        await applySqlFile(pool, file);
+      }
+
       console.log(`Applied ${file}`);
     }
   } finally {

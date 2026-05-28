@@ -11,6 +11,7 @@
 
 # testing
 /coverage
+/storybook-static
 
 # tanstack start
 /.next/

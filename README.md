@@ -28,6 +28,15 @@ bun install
 bun run dev
 ```
 
+This repository currently consumes `@moritzbrantner/maps` and two related
+packages through `file:../maps` dependencies. Until those packages are consumed
+from a registry, keep the `maps` repository checked out next to this repository
+and install with:
+
+```bash
+./scripts/ci/install-with-sibling-maps.sh
+```
+
 `bun run dev` uses the template development flow. For long-lived local services, start compose and apply both the template and atlas database setup:
 
 ```bash
@@ -66,7 +75,11 @@ The first migration milestone keeps the historical schema as raw Postgres/PostGI
 bun run format:check
 bun run typecheck
 bun run test:unit
+bun run test:integration
+bun run storybook:build
+bun run test:storybook
 bun run build
+bun run build:gh-pages
 ```
 
 Atlas e2e coverage can be run directly:
@@ -78,3 +91,26 @@ bunx playwright test \
 ```
 
 The broader template confidence commands are still available through `bun run verify`, `bun run checks:beta`, and `bun run checks:main`.
+
+`bun run checks:nightly` is the fast PR gate for format, type, package, and unit
+coverage. `bun run checks:beta` adds database migration checks, atlas seed
+idempotency, and integration tests. `bun run checks:main` adds Storybook,
+GitHub Pages export, production build, and Playwright e2e.
+
+Storybook is configured for atlas UI surfaces and uses bundled static atlas data:
+
+```bash
+bun run storybook
+bun run storybook:build
+bun run test:storybook
+```
+
+GitHub Pages export also uses bundled atlas data through
+`NEXT_PUBLIC_ATLAS_DATA_MODE=static`, because exported static pages cannot rely
+on Next API routes:
+
+```bash
+NEXT_DEPLOY_TARGET=gh-pages \
+GITHUB_PAGES_BASE_PATH=/historical-source-atlas \
+bun run build:gh-pages
+```

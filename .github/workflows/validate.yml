@@ -33,7 +33,7 @@ jobs:
         with:
           path: maps
           repository: ${{ github.repository_owner }}/maps
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
@@ -42,7 +42,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: historical-source-atlas
-        run: bun install --frozen-lockfile
+        run: ./scripts/ci/install-with-sibling-maps.sh
 
       - name: Run fast checks
         working-directory: historical-source-atlas
@@ -63,7 +63,7 @@ jobs:
         with:
           path: maps
           repository: ${{ github.repository_owner }}/maps
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
@@ -72,11 +72,112 @@ jobs:
 
       - name: Install dependencies
         working-directory: historical-source-atlas
-        run: bun install --frozen-lockfile
+        run: ./scripts/ci/install-with-sibling-maps.sh
 
-      - name: Run integration tests
+      - name: Run integration checks
         working-directory: historical-source-atlas
-        run: bun run test:integration
+        run: |
+          set -euo pipefail
+          bun run db:check
+          ./scripts/ci/check-atlas-seed-idempotency.sh
+          bun run test:integration
+
+      - name: Upload seed service logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          if-no-files-found: ignore
+          name: integration-docker-state
+          path: |
+            historical-source-atlas/test-results
+            historical-source-atlas/playwright-report
+
+  storybook:
+    name: Storybook Validation
+    needs: fast
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          path: historical-source-atlas
+
+      - name: Checkout sibling maps dependency
+        uses: actions/checkout@v6
+        with:
+          path: maps
+          repository: ${{ github.repository_owner }}/maps
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        working-directory: historical-source-atlas
+        run: ./scripts/ci/install-with-sibling-maps.sh
+
+      - name: Install Playwright browser
+        working-directory: historical-source-atlas
+        run: bunx playwright install --with-deps chromium
+
+      - name: Build Storybook
+        working-directory: historical-source-atlas
+        run: bun run storybook:build
+
+      - name: Run Storybook tests
+        working-directory: historical-source-atlas
+        run: bun run test:storybook
+
+      - name: Upload Storybook artifact
+        if: failure() || github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v7
+        with:
+          if-no-files-found: ignore
+          name: storybook-static
+          path: historical-source-atlas/storybook-static
+
+  pages-export:
+    name: GitHub Pages Export
+    needs: integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          path: historical-source-atlas
+
+      - name: Checkout sibling maps dependency
+        uses: actions/checkout@v6
+        with:
+          path: maps
+          repository: ${{ github.repository_owner }}/maps
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        working-directory: historical-source-atlas
+        run: ./scripts/ci/install-with-sibling-maps.sh
+
+      - name: Build GitHub Pages artifact
+        working-directory: historical-source-atlas
+        env:
+          NEXT_DEPLOY_TARGET: gh-pages
+          GITHUB_PAGES_BASE_PATH: /${{ github.event.repository.name }}
+        run: bun run build:gh-pages
+
+      - name: Verify Unlighthouse summary output
+        working-directory: historical-source-atlas
+        run: |
+          set -euo pipefail
+          test -f .generated/unlighthouse/ci-result.json
+          test -f out/en/unlighthouse/index.html
+          test -f out/de/unlighthouse/index.html
 
   full:
     name: Full Validation
@@ -93,7 +194,7 @@ jobs:
         with:
           path: maps
           repository: ${{ github.repository_owner }}/maps
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
@@ -102,11 +203,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: historical-source-atlas
-        run: bun install --frozen-lockfile
-
-      - name: Check database migrations
-        working-directory: historical-source-atlas
-        run: bun run db:check
+        run: ./scripts/ci/install-with-sibling-maps.sh
 
       - name: Build app
         working-directory: historical-source-atlas
@@ -132,6 +229,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v7
         with:
+          if-no-files-found: ignore
           name: playwright-results
           path: |
             historical-source-atlas/test-results

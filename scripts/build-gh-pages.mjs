@@ -202,6 +202,16 @@ function createStaticExportServer(rootDir) {
     stop: () =>
       new Promise((resolve, reject) => {
         server.close((error) => {
+          if (
+            error &&
+            typeof error === 'object' &&
+            'code' in error &&
+            error.code === 'ERR_SERVER_NOT_RUNNING'
+          ) {
+            resolve();
+            return;
+          }
+
           if (error) {
             reject(error);
             return;
@@ -239,6 +249,7 @@ function runNextBuild() {
       env: {
         ...process.env,
         NEXT_DEPLOY_TARGET: 'gh-pages',
+        NEXT_PUBLIC_ATLAS_DATA_MODE: 'static',
       },
     });
 
@@ -320,7 +331,15 @@ try {
   await runNextBuild();
 } finally {
   if (staticServer) {
-    await staticServer.stop();
+    try {
+      await staticServer.stop();
+    } catch (error) {
+      console.warn(
+        error instanceof Error
+          ? `Static export preview server cleanup failed: ${error.message}`
+          : 'Static export preview server cleanup failed.',
+      );
+    }
   }
 
   await restoreMovedPaths();

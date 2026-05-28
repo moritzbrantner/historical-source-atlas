@@ -369,7 +369,14 @@ echo "ℹ️ Waiting for object storage readiness..."
   })();
 '
 
-if [[ "$OBJECT_STORAGE_MANAGED" -eq 1 ]] && docker_available && docker_compose_available; then
+should_ensure_object_storage_bucket() {
+  [[ "$OBJECT_STORAGE_MANAGED" -eq 1 ]] && return 0
+  [[ "${PROFILE_IMAGE_STORAGE_ENDPOINT:-}" == http://127.0.0.1:* ]] && return 0
+  [[ "${PROFILE_IMAGE_STORAGE_ENDPOINT:-}" == http://localhost:* ]] && return 0
+  return 1
+}
+
+if should_ensure_object_storage_bucket && docker_available && docker_compose_available; then
   echo "ℹ️ Ensuring object storage bucket exists..."
   (
     cd "$APP_ROOT"

@@ -21,6 +21,7 @@ import {
   useAtlasSourcesQuery,
   useSourceQuery,
 } from '../../entities/source/api/sourceQueries';
+import type { SourceRepository } from '../../entities/source/api/sourceRepository';
 import {
   sourceKindColors,
   sourceKindLabels,
@@ -37,14 +38,16 @@ import { SourceReferenceNetwork } from './SourceReferenceNetwork';
 export function SourcePage({
   onBackToAtlas,
   onOpenSource,
+  sourceRepository,
   sourceId,
 }: {
   onBackToAtlas: () => void;
   onOpenSource: (sourceId: string) => void;
+  sourceRepository?: SourceRepository;
   sourceId: string;
 }) {
-  const sourceQuery = useSourceQuery(sourceId);
-  const sourcesQuery = useAtlasSourcesQuery();
+  const sourceQuery = useSourceQuery(sourceId, sourceRepository);
+  const sourcesQuery = useAtlasSourcesQuery(sourceRepository);
   const source = sourceQuery.data;
   const sources = sourcesQuery.data ?? [];
 
