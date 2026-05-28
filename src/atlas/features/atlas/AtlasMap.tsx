@@ -26,12 +26,14 @@ export function AtlasMap({
   onSelectSource,
   referenceDirectionFilters,
   selectedSourceId,
+  sourceTagsBySourceId,
   sources,
 }: {
   flows: SourceReferenceFlow[];
   onSelectSource: (sourceId: string) => void;
   referenceDirectionFilters: SourceReferenceDirection[];
   selectedSourceId: string | null;
+  sourceTagsBySourceId: ReadonlyMap<string, readonly string[]>;
   sources: HistoricalSource[];
 }) {
   const mapPanelRef = useRef<HTMLDivElement | null>(null);
@@ -116,7 +118,12 @@ export function AtlasMap({
             }
           }}
           points={sources}
-          renderFeaturePopup={(feature) => <SourcePopup feature={feature} />}
+          renderFeaturePopup={(feature) => (
+            <SourcePopup
+              feature={feature}
+              tags={sourceTagsBySourceId.get(feature.point.id) ?? []}
+            />
+          )}
           renderFeatureTooltip={(feature) => feature.point.label}
           selectedFeatureId={selectedSourceId}
         />
@@ -149,7 +156,13 @@ export function AtlasMap({
   );
 }
 
-export function SourcePopup({ feature }: { feature: HistoricalSourceFeature }) {
+export function SourcePopup({
+  feature,
+  tags,
+}: {
+  feature: HistoricalSourceFeature;
+  tags?: readonly string[];
+}) {
   const properties = getFeatureProperties(feature);
 
   return (
@@ -159,6 +172,18 @@ export function SourcePopup({ feature }: { feature: HistoricalSourceFeature }) {
       <span className="text-sm text-slate-600">
         Found: {properties.discovered}
       </span>
+      {tags?.length ? (
+        <span className="flex flex-wrap gap-1 pt-1">
+          {tags.map((tag) => (
+            <span
+              className="rounded-full bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-700"
+              key={tag}
+            >
+              {tag}
+            </span>
+          ))}
+        </span>
+      ) : null}
     </div>
   );
 }

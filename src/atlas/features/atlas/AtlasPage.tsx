@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import {
   ErrorState,
   LoadingState,
@@ -15,6 +16,10 @@ import {
 
 import { useAtlasSourcesQuery } from '../../entities/source/api/sourceQueries';
 import type { SourceRepository } from '../../entities/source/api/sourceRepository';
+import {
+  useAtlasSourceTagsQuery,
+  useReplaceAtlasSourceTagsMutation,
+} from '../../entities/source-tags/api/sourceTagQueries';
 import { AtlasFilters } from './AtlasFilters';
 import { AtlasMap } from './AtlasMap';
 import { AtlasSidebar } from './AtlasSidebar';
@@ -29,8 +34,16 @@ export function AtlasPage({
   sourceRepository?: SourceRepository;
 }) {
   const sourcesQuery = useAtlasSourcesQuery(sourceRepository);
+  const sourceTagsQuery = useAtlasSourceTagsQuery();
+  const replaceSourceTagsMutation = useReplaceAtlasSourceTagsMutation();
   const sources = sourcesQuery.data ?? [];
   const atlas = useAtlasViewModel(sources);
+  const sourceTags = sourceTagsQuery.data?.tags ?? [];
+  const sourceTagsBySourceId = useMemo(
+    () =>
+      new Map(sourceTags.map((tagGroup) => [tagGroup.sourceId, tagGroup.tags])),
+    [sourceTags],
+  );
 
   if (sourcesQuery.isLoading) {
     return (
@@ -103,10 +116,24 @@ export function AtlasPage({
             flows={atlas.selectedSourceReferenceFlows}
             referenceDirectionFilters={atlas.referenceDirectionFilters}
             selectedSourceId={atlas.selectedSource?.id ?? null}
+            sourceTagsBySourceId={sourceTagsBySourceId}
             sources={atlas.visibleSources}
             onSelectSource={atlas.setSelectedSourceId}
           />
           <AtlasSidebar
+            allSources={sources}
+            sourceTagsAuthenticated={
+              sourceTagsQuery.data?.authenticated ?? false
+            }
+            sourceTagsBySourceId={sourceTagsBySourceId}
+            sourceTagsError={
+              replaceSourceTagsMutation.error?.message ??
+              (sourceTagsQuery.isError
+                ? 'Could not load your source tags.'
+                : null)
+            }
+            sourceTagsLoading={sourceTagsQuery.isLoading}
+            sourceTagsSaving={replaceSourceTagsMutation.isPending}
             selectedSource={atlas.selectedSource}
             selectedSourceId={atlas.selectedSourceId}
             sourceStats={atlas.sourceStats}
@@ -114,6 +141,9 @@ export function AtlasPage({
             timelineMode={atlas.timelineMode}
             onOpenSource={onOpenSource}
             onSelectSource={atlas.setSelectedSourceId}
+            onUpdateSourceTags={(sourceId, tags) =>
+              replaceSourceTagsMutation.mutateAsync({ sourceId, tags })
+            }
           />
         </section>
       </PageContent>

@@ -183,6 +183,13 @@
       "when": 1779177836719,
       "tag": "0025_equal_rumiko_fujikawa",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1780002714015,
+      "tag": "0026_tough_queen_noir",
+      "breakpoints": true
     }
   ]
 }
