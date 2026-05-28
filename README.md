@@ -10,6 +10,9 @@ A small React site for exploring where historical texts, artifacts, inscriptions
 - TypeScript
 - Tailwind CSS v4
 - React Query
+- Storybook
+- Playwright
+- Axe
 - `@moritzbrantner/maps`
 - `@moritzbrantner/ui`
 - `oxfmt`
@@ -19,6 +22,7 @@ A small React site for exploring where historical texts, artifacts, inscriptions
 ```bash
 bun install
 bun run dev
+bun run storybook
 ```
 
 This repository expects the sibling `../maps` checkout to be present. In this workspace, `node_modules` is symlinked to `../maps/node_modules`, and `@moritzbrantner/maps` resolves to the sibling maps repository.
@@ -41,10 +45,14 @@ The current atlas data remains static, but it is accessed through async reposito
 bun run format
 bun run check-types
 bun run build
+bun run build-storybook
 bun run verify
 ```
 
 `oxfmt` is configured in `.oxfmtrc.json`. `docker-compose.yml` is ignored so its existing compose quote style stays unchanged.
+
+Vitest tests are colocated beside the code they cover as `*.test.ts` or `*.test.tsx`.
+Playwright tests are also colocated under `src` as `*.e2e.ts`. E2E accessibility checks use Axe and fail on serious or critical violations.
 
 ## Data Model
 

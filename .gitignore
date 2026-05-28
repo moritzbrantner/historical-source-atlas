@@ -1,6 +1,7 @@
 dist
 node_modules
 playwright-report
+storybook-static
 test-results
 *.local
 *.tsbuildinfo

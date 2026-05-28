@@ -19,13 +19,15 @@
     "services:down": "docker compose stop postgres minio",
     "services:clean": "docker compose down -v --remove-orphans",
     "services:ps": "docker compose ps",
+    "build-storybook": "storybook build",
+    "storybook": "storybook dev -p 6006 --host 0.0.0.0",
     "test": "bun run test:unit && bun run test:db && bun run test:e2e",
     "test:db": "vitest run --config vitest.db.config.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
-    "verify": "bun run check-types && bun run format:check && bun run test:unit && bun run build"
+    "verify": "bun run check-types && bun run format:check && bun run test:unit && bun run build && bun run build-storybook"
   },
   "dependencies": {
     "@moritzbrantner/data-density": "link:../maps/node_modules/@moritzbrantner/data-density",
@@ -40,7 +42,11 @@
     "tailwindcss": "^4.1.14"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
     "@playwright/test": "^1.60.0",
+    "@storybook/addon-a11y": "^10.4.1",
+    "@storybook/addon-docs": "^10.4.1",
+    "@storybook/react-vite": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
@@ -52,6 +58,7 @@
     "jsdom": "^29.1.1",
     "oxfmt": "^0.52.0",
     "pg": "^8.21.0",
+    "storybook": "^10.4.1",
     "typescript": "6.0.2",
     "vite": "^8.0.13",
     "vitest": "^4.1.7"

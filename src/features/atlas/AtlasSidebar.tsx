@@ -107,12 +107,12 @@ function SourceDetail({
       </SurfaceHeader>
       <SurfaceContent className="grid gap-4">
         <p className="text-sm leading-6 text-slate-600">{source.properties.summary}</p>
-        <div className="grid gap-3">
+        <dl className="grid gap-3">
           <Fact label="Found" value={source.properties.location} />
           <Fact label="Discovery" value={source.properties.discovered} />
           <Fact label="Source date" value={source.properties.period} />
           <Fact label="Repository" value={source.properties.currentRepository} />
-        </div>
+        </dl>
         <DetailSection title="How and where it was found">
           <p>{source.properties.discoveryContext}</p>
         </DetailSection>

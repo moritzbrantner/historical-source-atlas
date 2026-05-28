@@ -27,7 +27,8 @@ export default defineConfig({
   ],
   reporter: isCi ? [["github"], ["html", { open: "never" }]] : "list",
   retries: isCi ? 1 : 0,
-  testDir: "./e2e",
+  testDir: "./src",
+  testMatch: "**/*.e2e.ts",
   use: {
     baseURL: "http://127.0.0.1:5180",
     trace: "retain-on-failure",
