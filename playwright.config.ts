@@ -1,41 +1,39 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig } from '@playwright/test';
+import { createE2EEnvironment, getE2EBaseURL } from '@/scripts/e2e/environment';
 
-const isCi = Boolean(process.env.CI);
+const baseURL = getE2EBaseURL();
+const e2eEnvironment = createE2EEnvironment(baseURL);
+const port = Number(new URL(baseURL).port);
+const workers = process.env.PLAYWRIGHT_WORKERS
+  ? Number(process.env.PLAYWRIGHT_WORKERS)
+  : process.env.CI
+    ? 1
+    : 1;
+
+Object.assign(process.env, e2eEnvironment);
 
 export default defineConfig({
-  expect: {
-    timeout: 10000,
-  },
-  fullyParallel: true,
-  projects: [
-    {
-      name: "chromium-desktop",
-      use: {
-        ...devices["Desktop Chrome"],
-        viewport: {
-          height: 1000,
-          width: 1440,
-        },
-      },
-    },
-    {
-      name: "chromium-mobile",
-      use: {
-        ...devices["Pixel 5"],
-      },
-    },
-  ],
-  reporter: isCi ? [["github"], ["html", { open: "never" }]] : "list",
-  retries: isCi ? 1 : 0,
-  testDir: "./src",
-  testMatch: "**/*.e2e.ts",
+  tsconfig: './playwright.tsconfig.json',
+  globalSetup: './scripts/e2e/global-setup.cts',
+  globalTeardown: './scripts/e2e/global-teardown.cts',
+  testDir: '.',
+  testMatch: '**/*.e2e.spec.ts',
+  timeout: 120_000,
+  workers,
   use: {
-    baseURL: "http://127.0.0.1:5180",
-    trace: "retain-on-failure",
+    baseURL,
+    channel: 'chrome',
   },
   webServer: {
-    command: "bun run dev --host 127.0.0.1",
-    reuseExistingServer: !isCi,
-    url: "http://127.0.0.1:5180",
+    command: `./scripts/e2e/start-playwright-server.sh ${port}`,
+    env: {
+      ...e2eEnvironment,
+      PLAYWRIGHT_TEST: '1',
+    },
+    port,
+    timeout: 180_000,
+    reuseExistingServer: false,
+    stdout: 'pipe',
+    stderr: 'pipe',
   },
 });

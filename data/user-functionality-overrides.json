@@ -1,0 +1,10 @@
+{
+  "supportedFeatureKeys": [
+    "profiles.follow",
+    "profiles.blog",
+    "people.directory",
+    "groups",
+    "notifications"
+  ],
+  "overrides": []
+}

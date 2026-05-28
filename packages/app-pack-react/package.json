@@ -1,0 +1,36 @@
+{
+  "name": "@moritzbrantner/app-pack-react",
+  "version": "0.1.0",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moritzbrantner/next-template.git",
+    "directory": "packages/app-pack-react"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://npm.pkg.github.com"
+  },
+  "scripts": {
+    "build": "tsup src/index.tsx --format esm --dts --clean --out-dir dist",
+    "lint": "bun ../../scripts/verify-package-imports.mjs ./src @/ next/",
+    "typecheck": "tsc --noEmit",
+    "test": "cd ../.. && vitest run packages/app-pack-react/src/*.unit.test.tsx"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

@@ -1,0 +1,138 @@
+name: Validate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+
+jobs:
+  fast:
+    name: Fast Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          path: historical-source-atlas
+
+      - name: Checkout sibling maps dependency
+        uses: actions/checkout@v6
+        with:
+          path: maps
+          repository: ${{ github.repository_owner }}/maps
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        working-directory: historical-source-atlas
+        run: bun install --frozen-lockfile
+
+      - name: Run fast checks
+        working-directory: historical-source-atlas
+        run: bun run checks:nightly
+
+  integration:
+    name: Integration Validation
+    needs: fast
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          path: historical-source-atlas
+
+      - name: Checkout sibling maps dependency
+        uses: actions/checkout@v6
+        with:
+          path: maps
+          repository: ${{ github.repository_owner }}/maps
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        working-directory: historical-source-atlas
+        run: bun install --frozen-lockfile
+
+      - name: Run integration tests
+        working-directory: historical-source-atlas
+        run: bun run test:integration
+
+  full:
+    name: Full Validation
+    needs: integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          path: historical-source-atlas
+
+      - name: Checkout sibling maps dependency
+        uses: actions/checkout@v6
+        with:
+          path: maps
+          repository: ${{ github.repository_owner }}/maps
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        working-directory: historical-source-atlas
+        run: bun install --frozen-lockfile
+
+      - name: Check database migrations
+        working-directory: historical-source-atlas
+        run: bun run db:check
+
+      - name: Build app
+        working-directory: historical-source-atlas
+        env:
+          AUTH_SECRET: ci-build-secret-ci-build-secret
+          DATABASE_URL: postgresql://atlas:atlas_password@127.0.0.1:55434/historical_source_atlas?schema=public
+          SITE_URL: http://127.0.0.1:3000
+          EMAIL_PROVIDER: smtp
+          EMAIL_FROM: no-reply@example.com
+          SMTP_HOST: localhost
+          SMTP_PORT: 1025
+          SMTP_USER: ci
+          SMTP_PASSWORD: ci
+          SMTP_SECURE: 'false'
+          INTERNAL_CRON_SECRET: ci-cron-secret
+        run: bun run build
+
+      - name: Run e2e tests
+        working-directory: historical-source-atlas
+        run: ./scripts/ci/run-e2e.sh
+
+      - name: Upload Playwright artifacts
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-results
+          path: |
+            historical-source-atlas/test-results
+            historical-source-atlas/playwright-report

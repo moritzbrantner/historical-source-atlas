@@ -1,0 +1,106 @@
+{
+  "roles": [
+    {
+      "id": "USER",
+      "label": "User",
+      "description": "Standard signed-in user access.",
+      "permissions": [
+        "dashboard.view",
+        "account.updateOwnEmail",
+        "account.deleteOwn",
+        "notifications.readOwn",
+        "profile.editOwn",
+        "profile.manageOwnImage",
+        "profile.manageOwnTags",
+        "profile.manageOwnSearchVisibility",
+        "profile.manageOwnFollowerVisibility",
+        "profile.follow",
+        "profile.block",
+        "workspace.access"
+      ]
+    },
+    {
+      "id": "MANAGER",
+      "label": "Manager",
+      "description": "Standard user permissions with a separate role assignment tier.",
+      "permissions": [
+        "dashboard.view",
+        "account.updateOwnEmail",
+        "account.deleteOwn",
+        "notifications.readOwn",
+        "profile.editOwn",
+        "profile.manageOwnImage",
+        "profile.manageOwnTags",
+        "profile.manageOwnSearchVisibility",
+        "profile.manageOwnFollowerVisibility",
+        "profile.follow",
+        "profile.block",
+        "workspace.access"
+      ]
+    },
+    {
+      "id": "ADMIN",
+      "label": "Admin",
+      "description": "Administrative access without role editing privileges.",
+      "permissions": [
+        "dashboard.view",
+        "account.updateOwnEmail",
+        "account.deleteOwn",
+        "notifications.readOwn",
+        "profile.editOwn",
+        "profile.manageOwnImage",
+        "profile.manageOwnTags",
+        "profile.manageOwnSearchVisibility",
+        "profile.manageOwnFollowerVisibility",
+        "profile.follow",
+        "profile.block",
+        "workspace.access",
+        "workspace.dataEntry.write",
+        "admin.access",
+        "admin.content.read",
+        "admin.content.edit",
+        "admin.reports.read",
+        "admin.reports.export",
+        "admin.users.read",
+        "admin.users.notify",
+        "admin.roles.read",
+        "admin.systemSettings.read",
+        "admin.systemSettings.edit"
+      ]
+    },
+    {
+      "id": "SUPERADMIN",
+      "label": "Superadmin",
+      "description": "Full administrative access including role editing.",
+      "permissions": [
+        "dashboard.view",
+        "account.updateOwnEmail",
+        "account.deleteOwn",
+        "notifications.readOwn",
+        "profile.editOwn",
+        "profile.manageOwnImage",
+        "profile.manageOwnTags",
+        "profile.manageOwnSearchVisibility",
+        "profile.manageOwnFollowerVisibility",
+        "profile.follow",
+        "profile.block",
+        "workspace.access",
+        "workspace.dataEntry.write",
+        "admin.access",
+        "admin.content.read",
+        "admin.content.edit",
+        "admin.reports.read",
+        "admin.reports.export",
+        "admin.users.read",
+        "admin.users.notify",
+        "admin.users.manageStatus",
+        "admin.roles.read",
+        "admin.roles.edit",
+        "admin.systemSettings.read",
+        "admin.systemSettings.edit",
+        "admin.dataStudio.read",
+        "admin.dataStudio.write"
+      ]
+    }
+  ]
+}

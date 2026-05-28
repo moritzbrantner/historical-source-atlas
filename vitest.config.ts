@@ -1,10 +1,33 @@
-import { defineConfig } from "vitest/config";
+import path from 'node:path';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, '.'),
+      react: path.resolve(__dirname, 'node_modules/react'),
+      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+      'react/jsx-runtime': path.resolve(
+        __dirname,
+        'node_modules/react/jsx-runtime.js',
+      ),
+    },
+  },
   test: {
-    environment: "node",
-    exclude: ["e2e/**", "src/**/*.db.test.ts", "db/**/*.db.test.ts", "node_modules/**"],
-    include: ["src/**/*.test.ts", "src/**/*.spec.ts", "src/**/*.test.tsx"],
-    setupFiles: ["src/test/setup.ts"],
+    environment: 'node',
+    include: [
+      '**/*.unit.test.ts',
+      '**/*.unit.test.tsx',
+      '**/*.integration.test.ts',
+      '**/*.integration.test.tsx',
+    ],
+    exclude: [
+      '**/node_modules/**',
+      '**/.next/**',
+      '**/dist/**',
+      '**/build/**',
+      '**/coverage/**',
+    ],
+    setupFiles: ['./src/testing/vitest.setup.ts'],
   },
 });

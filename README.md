@@ -1,63 +1,80 @@
 # Historical Source Atlas
 
-A small React site for exploring where historical texts, artifacts, inscriptions, and manuscripts entered the record.
+Historical Source Atlas is a Next.js 16 full-stack atlas application for browsing historical source records, their locations, reference flows, and source detail pages.
+
+This branch migrates the original Vite React atlas into the committed `next-template` runtime in place. The atlas UI now lives under `src/atlas`, public pages are served through the Next App Router, and source data is exposed through DB-backed API routes.
+
+## Public Routes
+
+- `/`: atlas map, source list, timeline, and filters
+- `/sources/[slug]`: source detail page
+- `/api/atlas/sources`: all atlas source records
+- `/api/atlas/sources/[slug]`: one atlas source record or `404`
 
 ## Stack
 
-- Bun
-- Vite
-- React
-- TypeScript
-- Tailwind CSS v4
-- React Query
-- Storybook
-- Playwright
-- Axe
-- `@moritzbrantner/maps`
-- `@moritzbrantner/ui`
-- `oxfmt`
+- Next.js 16 App Router + React 19
+- Bun workspaces
+- PostgreSQL/PostGIS with Drizzle still available for template-owned schema
+- Raw SQL atlas migrations and seed data under `db/atlas`
+- TanStack Query for atlas client data loading
+- Vitest + Playwright
 
-## Development
+## Local Setup
 
 ```bash
+cp .env.example .env
 bun install
 bun run dev
-bun run storybook
 ```
 
-This repository expects the sibling `../maps` checkout to be present. In this workspace, `node_modules` is symlinked to `../maps/node_modules`, and `@moritzbrantner/maps` resolves to the sibling maps repository.
-
-## Code Organization
-
-The React app is split by responsibility:
-
-- `src/app` owns providers and lightweight browser-history routing.
-- `src/entities/source` owns source types, constants, static repository data, React Query hooks, and pure source utilities.
-- `src/features/atlas` owns the atlas page, map, filters, timeline, sidebar, and atlas view model.
-- `src/features/source-detail` owns source detail pages and related source context.
-- `src/shared` holds small cross-feature helpers and UI wrappers.
-
-The current atlas data remains static, but it is accessed through async repository functions and React Query. That boundary matches the documented future API shape so the repository implementation can later be swapped for HTTP fetchers.
-
-## Quality Checks
+`bun run dev` uses the template development flow. For long-lived local services, start compose and apply both the template and atlas database setup:
 
 ```bash
-bun run format
-bun run check-types
-bun run build
-bun run build-storybook
-bun run verify
+bun run services:up
+bun run db:migrate
+bun run db:atlas:migrate
+bun run db:seed:test-users
+bun run db:atlas:seed
+bun run dev:app
 ```
 
-`oxfmt` is configured in `.oxfmtrc.json`. `docker-compose.yml` is ignored so its existing compose quote style stays unchanged.
+The default local database is `historical_source_atlas` on port `55434`.
 
-Vitest tests are colocated beside the code they cover as `*.test.ts` or `*.test.tsx`.
-Playwright tests are also colocated under `src` as `*.e2e.ts`. E2E accessibility checks use Axe and fail on serious or critical violations.
+## Atlas Data
 
-## Data Model
+Atlas database assets are namespaced separately from the template schema:
 
-The scholarly database model is implemented in `db/migrations/001_initial_schema.sql`.
-It targets Postgres with PostGIS and S3-compatible object storage such as MinIO.
+- `db/atlas/migrations/001_initial_schema.sql`
+- `db/atlas/migrations/002_referenced_entities.sql`
+- `db/atlas/seeds/001_current_static_sources.sql`
 
-Local database/storage services are defined in `docker-compose.yml`; see
-`docs/data-model.md` for migration, seed, and read-model details.
+The first migration milestone keeps the historical schema as raw Postgres/PostGIS SQL. Runtime reads are implemented in `src/atlas/server/atlasSourceRepository.ts` and exposed by the `/api/atlas/*` route handlers.
+
+## Repository Layout
+
+- `app.manifest.ts`: app metadata used by the inherited scaffold tooling
+- `app/`: Next.js App Router pages and route handlers
+- `src/atlas/`: atlas domain, features, client routes, tests, and server repository
+- `src/db/`: template database client and Drizzle integration
+- `db/atlas/`: atlas raw SQL migrations and seed data
+- `packages/`: local scaffold support packages
+
+## Checks
+
+```bash
+bun run format:check
+bun run typecheck
+bun run test:unit
+bun run build
+```
+
+Atlas e2e coverage can be run directly:
+
+```bash
+bunx playwright test \
+  src/atlas/features/atlas/AtlasPage.e2e.spec.ts \
+  src/atlas/features/source-detail/SourcePage.e2e.spec.ts
+```
+
+The broader template confidence commands are still available through `bun run verify`, `bun run checks:beta`, and `bun run checks:main`.
