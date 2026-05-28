@@ -136,8 +136,15 @@ export function createDefaultSourceKindFilters(): SourceKindFilters {
     allSourceKinds.map((kind) => [
       kind,
       {
-        depth: defaultRelationshipDepth,
-        mode: "all",
+        all: true,
+        referenced: {
+          depth: defaultRelationshipDepth,
+          enabled: false,
+        },
+        referencing: {
+          depth: defaultRelationshipDepth,
+          enabled: false,
+        },
       },
     ]),
   ) as SourceKindFilters;

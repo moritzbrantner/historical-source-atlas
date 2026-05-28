@@ -2,11 +2,17 @@ import type { TimelineMode } from "../model/sourceTimeline";
 import type { HistoricalSource, SourceKind } from "../model/sourceTypes";
 import { getTimelineYear } from "./sourceFormatting";
 
-export type RelationshipScopeMode = "all" | "referenced" | "referencing";
+export type RelationshipScopeMode = "referenced" | "referencing";
+
+export type SourceRelationshipFilter = {
+  depth: number;
+  enabled: boolean;
+};
 
 export type SourceKindFilter = {
-  depth: number;
-  mode: RelationshipScopeMode;
+  all: boolean;
+  referenced: SourceRelationshipFilter;
+  referencing: SourceRelationshipFilter;
 };
 
 export type SourceKindFilters = Record<SourceKind, SourceKindFilter>;
@@ -66,7 +72,7 @@ function getReachableSourceIdsByKind(
   sources.forEach((source) => {
     const filter = filters[source.properties.kind];
 
-    if (filter.mode === "all") {
+    if (filter.all) {
       sourceIds.add(source.id);
       return;
     }
@@ -75,18 +81,44 @@ function getReachableSourceIdsByKind(
       return;
     }
 
-    const reachableFilterKey = `${filter.mode}:${filter.depth}`;
-    const reachableIds =
-      reachableByFilter.get(reachableFilterKey) ??
-      getReachableSourceIds(relationGraph, selectedSourceId, filter.mode, filter.depth);
-    reachableByFilter.set(reachableFilterKey, reachableIds);
-
-    if (reachableIds.has(source.id)) {
+    if (
+      sourceMatchesRelationshipFilter(
+        source.id,
+        relationGraph,
+        selectedSourceId,
+        filter,
+        reachableByFilter,
+      )
+    ) {
       sourceIds.add(source.id);
     }
   });
 
   return sourceIds;
+}
+
+function sourceMatchesRelationshipFilter(
+  sourceId: string,
+  relationGraph: SourceRelationGraph,
+  selectedSourceId: string,
+  filter: SourceKindFilter,
+  reachableByFilter: Map<string, Set<string>>,
+) {
+  return (["referenced", "referencing"] as const).some((mode) => {
+    const relationshipFilter = filter[mode];
+
+    if (!relationshipFilter.enabled) {
+      return false;
+    }
+
+    const reachableFilterKey = `${mode}:${relationshipFilter.depth}`;
+    const reachableIds =
+      reachableByFilter.get(reachableFilterKey) ??
+      getReachableSourceIds(relationGraph, selectedSourceId, mode, relationshipFilter.depth);
+    reachableByFilter.set(reachableFilterKey, reachableIds);
+
+    return reachableIds.has(sourceId);
+  });
 }
 
 type SourceRelationGraph = {
@@ -150,7 +182,7 @@ function relationshipTargetsSource(relationshipLabel: string, source: Historical
 function getReachableSourceIds(
   relationGraph: SourceRelationGraph,
   selectedSourceId: string,
-  mode: Exclude<RelationshipScopeMode, "all">,
+  mode: RelationshipScopeMode,
   depth: number,
 ) {
   const adjacency = mode === "referenced" ? relationGraph.outgoing : relationGraph.incoming;
