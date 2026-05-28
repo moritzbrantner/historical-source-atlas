@@ -5,10 +5,13 @@ import "@moritzbrantner/ui/atlas/styles.css";
 import "@moritzbrantner/maps/styles.css";
 import "./styles.css";
 
-import { App } from "./App";
+import { App } from "./app/App";
+import { AppProviders } from "./app/providers";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App />
+    <AppProviders>
+      <App />
+    </AppProviders>
   </StrictMode>,
 );

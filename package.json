@@ -11,11 +11,15 @@
     "db:seed": "docker compose exec -T postgres psql -U atlas -d historical_source_atlas < db/seeds/001_current_static_sources.sql",
     "db:up": "bun run services:up",
     "dev": "vite --host 0.0.0.0",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
     "preview": "vite preview --host 0.0.0.0",
     "services:up": "docker compose up -d postgres minio minio-create-buckets",
     "services:down": "docker compose stop postgres minio",
     "services:clean": "docker compose down -v --remove-orphans",
-    "services:ps": "docker compose ps"
+    "services:ps": "docker compose ps",
+    "test": "bun run check-types && bun run format:check",
+    "verify": "bun run check-types && bun run format:check && bun run build"
   },
   "dependencies": {
     "@moritzbrantner/data-density": "link:../maps/node_modules/@moritzbrantner/data-density",
@@ -23,6 +27,7 @@
     "@moritzbrantner/timeline-editor": "link:../maps/node_modules/@moritzbrantner/timeline-editor",
     "@moritzbrantner/ui": "https://registry.npmjs.org/@moritzbrantner/ui/-/ui-0.8.0.tgz",
     "@tailwindcss/vite": "^4.3.0",
+    "@tanstack/react-query": "^5.100.14",
     "leaflet": "^1.9.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -33,6 +38,7 @@
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "^6.0.2",
+    "oxfmt": "^0.52.0",
     "typescript": "6.0.2",
     "vite": "^8.0.13"
   },
