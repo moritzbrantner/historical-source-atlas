@@ -1,7 +1,9 @@
-import { AtlasProviders } from '@/src/atlas/app/AtlasProviders';
-import { SourceRoute } from '@/src/atlas/app/SourceRoute';
-import { AtlasWebShell } from '@/src/atlas/app/AtlasWebShell';
+import { redirect } from 'next/navigation';
+
+import { StaticRedirectPage } from '@/components/static-redirect-page';
+import { routing, withLocalePath } from '@/i18n/routing';
 import { historicalSources } from '@/src/atlas/entities/source/api/staticSourceData';
+import { isGithubPagesBuild } from '@/src/runtime/build-target';
 
 export function generateStaticParams() {
   return historicalSources.map((source) => ({ slug: source.id }));
@@ -13,12 +15,20 @@ export default async function SourceDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-
-  return (
-    <AtlasProviders>
-      <AtlasWebShell>
-        <SourceRoute sourceId={slug} />
-      </AtlasWebShell>
-    </AtlasProviders>
+  const localizedPath = withLocalePath(
+    `/atlas/sources/${encodeURIComponent(slug)}`,
+    routing.defaultLocale,
   );
+
+  if (isGithubPagesBuild) {
+    return (
+      <StaticRedirectPage
+        href={`../../${routing.defaultLocale}/atlas/sources/${encodeURIComponent(
+          slug,
+        )}/`}
+      />
+    );
+  }
+
+  redirect(localizedPath);
 }

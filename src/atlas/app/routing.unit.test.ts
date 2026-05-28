@@ -4,9 +4,11 @@ import { getSourcePath } from './routing';
 
 describe('atlas routing', () => {
   it('keeps root as the atlas route and builds source paths', () => {
-    expect(getSourcePath('dead-sea-scrolls')).toBe('/sources/dead-sea-scrolls');
+    expect(getSourcePath('dead-sea-scrolls')).toBe(
+      '/atlas/sources/dead-sea-scrolls',
+    );
     expect(getSourcePath('source with spaces')).toBe(
-      '/sources/source%20with%20spaces',
+      '/atlas/sources/source%20with%20spaces',
     );
   });
 });

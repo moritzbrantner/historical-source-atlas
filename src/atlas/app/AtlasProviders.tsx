@@ -20,7 +20,7 @@ export function AtlasProviders({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AtlasTheme className="min-h-screen bg-slate-100 text-slate-900">
+      <AtlasTheme className="atlas-app min-h-screen bg-slate-100 text-slate-900 dark:bg-zinc-950 dark:text-zinc-50">
         {children}
       </AtlasTheme>
     </QueryClientProvider>

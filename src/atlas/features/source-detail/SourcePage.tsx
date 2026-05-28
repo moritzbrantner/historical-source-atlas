@@ -220,7 +220,7 @@ function SourceLocationMap({ source }: { source: HistoricalSource }) {
         mapLabel={`${source.label} discovery location`}
         style={{ minHeight: 330 }}
       >
-        <PointLayer
+        <PointLayer<HistoricalSource['properties']>
           getFeatureId={(feature) => feature.point.id}
           getPointColor={(feature) =>
             sourceKindColors[getFeatureProperties(feature).kind]

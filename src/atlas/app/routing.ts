@@ -1,3 +1,3 @@
 export function getSourcePath(sourceId: string) {
-  return `/sources/${encodeURIComponent(sourceId)}`;
+  return `/atlas/sources/${encodeURIComponent(sourceId)}`;
 }

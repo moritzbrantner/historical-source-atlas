@@ -1,5 +1,3 @@
-import type { MapPoint } from '@moritzbrantner/maps/core';
-
 export type SourceKind =
   | 'text'
   | 'artifact'
@@ -29,9 +27,11 @@ export type HistoricalSourceProperties = {
   summary: string;
 };
 
-export type HistoricalSource = MapPoint<HistoricalSourceProperties> & {
+export type HistoricalSource = {
   id: string;
   label: string;
+  latitude: number;
+  longitude: number;
   metrics: {
     importance: number;
   };

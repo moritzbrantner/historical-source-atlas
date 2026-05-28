@@ -1,32 +1,127 @@
 'use client';
 
 import {
+  defaultLanguageSwitcherLanguages,
+  LanguageSwitcher,
   PlatformNavbar,
   type PlatformNavbarGroup,
   type PlatformNavbarRenderLinkProps,
+  ThemeModeSwitch,
 } from '@moritzbrantner/ui';
 import NextLink from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
+import { useSyncExternalStore } from 'react';
 
-const atlasNavigationGroups: PlatformNavbarGroup[] = [
+import {
+  type AppLocale,
+  routing,
+  stripLocaleFromPathname,
+  withLocalePath,
+} from '@/i18n/routing';
+import {
+  isTheme,
+  THEME_COOKIE_NAME,
+  THEME_STORAGE_KEY,
+  type Theme,
+} from '@/lib/theme';
+
+function getAtlasNavigationGroups(locale: AppLocale): PlatformNavbarGroup[] {
+  return [
+    {
+      id: 'explore',
+      label: 'Explore',
+      items: [
+        {
+          id: 'atlas',
+          href: withLocalePath('/atlas', locale),
+          label: 'Atlas',
+        },
+        {
+          id: 'about',
+          href: withLocalePath('/atlas/about', locale),
+          label: 'About',
+        },
+      ],
+    },
+  ];
+}
+
+function getSystemTheme(): Theme {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light';
+}
+
+function getThemeSnapshot(): Theme {
+  if (typeof window === 'undefined') {
+    return 'light';
+  }
+
+  const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+  return isTheme(storedTheme) ? storedTheme : getSystemTheme();
+}
+
+function subscribeTheme(onStoreChange: () => void) {
+  if (typeof window === 'undefined') {
+    return () => {};
+  }
+
+  const onThemeChange = () => onStoreChange();
+
+  window.addEventListener('storage', onThemeChange);
+  window.addEventListener('themechange', onThemeChange);
+
+  return () => {
+    window.removeEventListener('storage', onThemeChange);
+    window.removeEventListener('themechange', onThemeChange);
+  };
+}
+
+function persistTheme(theme: Theme) {
+  document.documentElement.classList.remove('light', 'dark');
+  document.documentElement.classList.add(theme);
+  window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+  document.cookie = `${THEME_COOKIE_NAME}=${theme}; path=/; max-age=31536000; samesite=lax`;
+  window.dispatchEvent(new Event('themechange'));
+}
+
+const languageLabels: Record<AppLocale, string> = {
+  de: 'Sprachauswahl',
+  en: 'Language selector',
+  es: 'Selector de idioma',
+  fr: 'Selecteur de langue',
+};
+
+const themeLabels: Record<
+  AppLocale,
   {
-    id: 'explore',
-    label: 'Explore',
-    items: [
-      {
-        id: 'atlas',
-        href: '/',
-        label: 'Atlas',
-      },
-      {
-        id: 'about',
-        href: '/about',
-        label: 'About',
-      },
-    ],
+    dark: string;
+    label: string;
+    light: string;
+  }
+> = {
+  de: {
+    dark: 'Dunkel',
+    label: 'Darstellung wechseln',
+    light: 'Hell',
   },
-];
+  en: {
+    dark: 'Dark',
+    label: 'Toggle theme',
+    light: 'Light',
+  },
+  es: {
+    dark: 'Oscuro',
+    label: 'Cambiar tema',
+    light: 'Claro',
+  },
+  fr: {
+    dark: 'Sombre',
+    label: 'Changer le theme',
+    light: 'Clair',
+  },
+};
 
 function renderAtlasNavbarLink({
   href,
@@ -63,21 +158,62 @@ function renderAtlasNavbarLink({
 }
 
 function getActiveNavbarItemId(pathname: string | null) {
-  if (pathname === '/') {
+  const normalizedPathname = stripLocaleFromPathname(pathname ?? '/');
+
+  if (
+    normalizedPathname === '/atlas' ||
+    normalizedPathname.startsWith('/atlas/sources/')
+  ) {
     return 'atlas';
   }
 
-  if (pathname === '/about') {
+  if (normalizedPathname === '/atlas/about') {
     return 'about';
   }
 
   return undefined;
 }
 
-function AtlasTopNavbar() {
+function AtlasTopNavbar({ locale }: { locale: AppLocale }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const theme = useSyncExternalStore<Theme>(
+    subscribeTheme,
+    getThemeSnapshot,
+    () => 'light',
+  );
+  const languages = defaultLanguageSwitcherLanguages.filter((language) =>
+    routing.locales.includes(language.value as AppLocale),
+  );
+  const controls = (
+    <>
+      <LanguageSwitcher
+        aria-label={languageLabels[locale]}
+        languages={languages}
+        value={locale}
+        onValueChange={(nextLocale) => {
+          router.push(
+            withLocalePath(
+              stripLocaleFromPathname(pathname ?? '/atlas'),
+              nextLocale as AppLocale,
+            ),
+          );
+        }}
+      />
+      <ThemeModeSwitch
+        aria-label={themeLabels[locale].label}
+        mode={theme}
+        lightLabel={themeLabels[locale].light}
+        darkLabel={themeLabels[locale].dark}
+        onModeChange={persistTheme}
+      />
+    </>
+  );
   const brand = (
-    <NextLink href="/" className="block truncate">
+    <NextLink
+      href={withLocalePath('/atlas', locale)}
+      className="block truncate"
+    >
       Historical Source Atlas
     </NextLink>
   );
@@ -88,7 +224,8 @@ function AtlasTopNavbar() {
         key={pathname}
         aria-label="Primary navigation"
         brand={brand}
-        groups={atlasNavigationGroups}
+        groups={getAtlasNavigationGroups(locale)}
+        actions={controls}
         activeItemId={getActiveNavbarItemId(pathname)}
         defaultOpenGroupId={null}
         renderLink={renderAtlasNavbarLink}
@@ -97,10 +234,16 @@ function AtlasTopNavbar() {
   );
 }
 
-export function AtlasWebShell({ children }: { children: ReactNode }) {
+export function AtlasWebShell({
+  children,
+  locale,
+}: {
+  children: ReactNode;
+  locale: AppLocale;
+}) {
   return (
     <>
-      <AtlasTopNavbar />
+      <AtlasTopNavbar locale={locale} />
       {children}
     </>
   );

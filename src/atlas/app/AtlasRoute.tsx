@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 
 import { AtlasPage } from '../features/atlas/AtlasPage';
 import { getSourcePath } from './routing';

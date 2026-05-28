@@ -1,13 +1,13 @@
-import { AtlasProviders } from '@/src/atlas/app/AtlasProviders';
-import { AtlasRoute } from '@/src/atlas/app/AtlasRoute';
-import { AtlasWebShell } from '@/src/atlas/app/AtlasWebShell';
+import { redirect } from 'next/navigation';
 
-export default function AtlasHomePage() {
-  return (
-    <AtlasProviders>
-      <AtlasWebShell>
-        <AtlasRoute />
-      </AtlasWebShell>
-    </AtlasProviders>
-  );
+import { StaticRedirectPage } from '@/components/static-redirect-page';
+import { routing, withLocalePath } from '@/i18n/routing';
+import { isGithubPagesBuild } from '@/src/runtime/build-target';
+
+export default function RootRedirectPage() {
+  if (isGithubPagesBuild) {
+    return <StaticRedirectPage href={`./${routing.defaultLocale}/atlas/`} />;
+  }
+
+  redirect(withLocalePath('/atlas', routing.defaultLocale));
 }

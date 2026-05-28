@@ -140,6 +140,48 @@ select {
   transition: padding 160ms ease;
 }
 
+.atlas-app {
+  color-scheme: light;
+}
+
+html.dark .atlas-app {
+  color-scheme: dark;
+}
+
+html.dark .atlas-app :where(.bg-white, .bg-slate-50) {
+  background-color: #18181b;
+}
+
+html.dark .atlas-app :where(.bg-slate-100) {
+  background-color: #09090b;
+}
+
+html.dark .atlas-app :where(.bg-slate-200) {
+  background-color: #27272a;
+}
+
+html.dark
+  .atlas-app
+  :where(.border-slate-100, .border-slate-200, .border-slate-300) {
+  border-color: #3f3f46;
+}
+
+html.dark
+  .atlas-app
+  :where(.text-slate-950, .text-slate-900, .text-slate-800, .text-slate-700) {
+  color: #f4f4f5;
+}
+
+html.dark .atlas-app :where(.text-slate-600, .text-slate-500) {
+  color: #a1a1aa;
+}
+
+html.dark .atlas-app :where(input, select) {
+  background-color: #18181b;
+  border-color: #52525b;
+  color: #f4f4f5;
+}
+
 html[data-density='compact'] .app-shell {
   padding-top: 1.75rem;
   padding-bottom: 1.75rem;

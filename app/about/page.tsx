@@ -6,8 +6,10 @@ import { isGithubPagesBuild } from '@/src/runtime/build-target';
 
 export default function AboutRedirectPage() {
   if (isGithubPagesBuild) {
-    return <StaticRedirectPage href={`../${routing.defaultLocale}/about/`} />;
+    return (
+      <StaticRedirectPage href={`../${routing.defaultLocale}/atlas/about/`} />
+    );
   }
 
-  redirect(withLocalePath('/about', routing.defaultLocale));
+  redirect(withLocalePath('/atlas/about', routing.defaultLocale));
 }

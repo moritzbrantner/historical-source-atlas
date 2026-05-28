@@ -95,8 +95,10 @@ export function createSourceReferenceFlows(
   ].filter((flow): flow is SourceReferenceFlow => flow !== null);
 }
 
-export function getFeatureProperties(feature: HistoricalSourceFeature) {
-  return feature.point.properties;
+export function getFeatureProperties(
+  feature: HistoricalSourceFeature,
+): HistoricalSource['properties'] {
+  return feature.point.properties as HistoricalSource['properties'];
 }
 
 function createSourceReferenceFlow(

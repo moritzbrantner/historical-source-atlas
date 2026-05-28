@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 
 import { SourcePage } from '../features/source-detail/SourcePage';
 import { getSourcePath } from './routing';
@@ -12,7 +12,7 @@ export function SourceRoute({ sourceId }: { sourceId: string }) {
     <SourcePage
       sourceId={sourceId}
       onBackToAtlas={() => {
-        router.push('/');
+        router.push('/atlas');
       }}
       onOpenSource={(nextSourceId) => {
         router.push(getSourcePath(nextSourceId));

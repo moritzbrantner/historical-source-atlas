@@ -102,7 +102,7 @@ export function AtlasMap({
           showDirection
           showEndpoints
         />
-        <PointLayer
+        <PointLayer<HistoricalSource['properties']>
           getFeatureId={(feature) => feature.point.id}
           getPointColor={(feature) =>
             sourceKindColors[getFeatureProperties(feature).kind]
