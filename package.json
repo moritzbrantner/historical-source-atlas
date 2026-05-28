@@ -6,12 +6,16 @@
   "scripts": {
     "build": "tsc -b && vite build",
     "check-types": "tsc --noEmit",
-    "db:down": "docker compose down",
+    "db:down": "bun run services:down",
     "db:schema": "docker compose exec -T postgres psql -U atlas -d historical_source_atlas < db/migrations/001_initial_schema.sql",
     "db:seed": "docker compose exec -T postgres psql -U atlas -d historical_source_atlas < db/seeds/001_current_static_sources.sql",
-    "db:up": "docker compose up -d postgres minio minio-init",
+    "db:up": "bun run services:up",
     "dev": "vite --host 0.0.0.0",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --host 0.0.0.0",
+    "services:up": "docker compose up -d postgres minio minio-create-buckets",
+    "services:down": "docker compose stop postgres minio",
+    "services:clean": "docker compose down -v --remove-orphans",
+    "services:ps": "docker compose ps"
   },
   "dependencies": {
     "@moritzbrantner/data-density": "link:../maps/node_modules/@moritzbrantner/data-density",

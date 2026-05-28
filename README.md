@@ -23,5 +23,5 @@ This repository expects the sibling `../maps` checkout to be present. In this wo
 The scholarly database model is implemented in `db/migrations/001_initial_schema.sql`.
 It targets Postgres with PostGIS and S3-compatible object storage such as MinIO.
 
-Local database/storage services are defined in `compose.yaml`; see
+Local database/storage services are defined in `docker-compose.yml`; see
 `docs/data-model.md` for migration, seed, and read-model details.

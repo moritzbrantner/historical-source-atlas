@@ -1,0 +1,67 @@
+name: historical-source-atlas
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: historical-source-atlas-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: '${POSTGRES_DB:-historical_source_atlas}'
+      POSTGRES_USER: '${POSTGRES_USER:-atlas}'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD:-atlas_password}'
+    ports:
+      - '${POSTGRES_PORT:-55434}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  minio:
+    image: minio/minio:latest
+    container_name: historical-source-atlas-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: '${MINIO_ROOT_USER:-minioadmin}'
+      MINIO_ROOT_PASSWORD: '${MINIO_ROOT_PASSWORD:-minioadmin}'
+    command: server /data --console-address ":9001"
+    ports:
+      - '${MINIO_API_PORT:-9000}:9000'
+      - '${MINIO_CONSOLE_PORT:-9001}:9001'
+    volumes:
+      - minio_data:/data
+
+  minio-create-buckets:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    restart: 'no'
+    environment:
+      MINIO_ROOT_USER: '${MINIO_ROOT_USER:-minioadmin}'
+      MINIO_ROOT_PASSWORD: '${MINIO_ROOT_PASSWORD:-minioadmin}'
+      MINIO_ORIGINALS_BUCKET: '${MINIO_ORIGINALS_BUCKET:-source-originals}'
+      MINIO_PUBLIC_BUCKET: '${MINIO_PUBLIC_BUCKET:-source-public}'
+      MINIO_DERIVATIVES_BUCKET: '${MINIO_DERIVATIVES_BUCKET:-source-derivatives}'
+    entrypoint: >
+      /bin/sh -c "
+      until mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD; do
+        sleep 1;
+      done;
+      mc mb --ignore-existing local/$$MINIO_ORIGINALS_BUCKET;
+      mc mb --ignore-existing local/$$MINIO_PUBLIC_BUCKET;
+      mc mb --ignore-existing local/$$MINIO_DERIVATIVES_BUCKET;
+      mc anonymous set download local/$$MINIO_PUBLIC_BUCKET;
+      "
+
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 10.90.5.0/24

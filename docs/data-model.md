@@ -11,13 +11,13 @@ Copy `.env.example` to `.env` if you want to override defaults, then start the
 database and object storage:
 
 ```bash
-docker compose up -d postgres minio
+docker compose up -d postgres minio minio-create-buckets
 ```
 
-Or through the package script, which also creates the default MinIO buckets:
+Or through the package script:
 
 ```bash
-bun run db:up
+bun run services:up
 ```
 
 Apply the schema:
