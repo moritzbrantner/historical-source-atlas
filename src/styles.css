@@ -243,6 +243,11 @@ select {
   border-radius: 999px;
 }
 
+.source-legend__relation i {
+  height: 3px;
+  border-radius: 999px;
+}
+
 .source-sidebar {
   display: grid;
   gap: 14px;
@@ -474,6 +479,10 @@ select {
   color: #526174;
   font-size: 0.84rem;
   line-height: 1.35;
+}
+
+.source-reference-popup {
+  max-width: 260px;
 }
 
 .source-page {

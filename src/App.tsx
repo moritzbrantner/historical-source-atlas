@@ -2,7 +2,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 
 import { Badge, Button, NativeSelect } from "@moritzbrantner/ui";
-import { PointMap, type PointMapFeature } from "@moritzbrantner/maps";
+import {
+  FlowLayer,
+  MapView,
+  PointLayer,
+  PointMap,
+  getBoundsFromPoints,
+  type FlowMapLayerFeature,
+  type PointMapFeature,
+} from "@moritzbrantner/maps";
 
 import {
   historicalSources,
@@ -23,6 +31,23 @@ type PageRoute =
       view: "source";
     };
 type HistoricalSourceFeature = PointMapFeature<HistoricalSource["properties"]>;
+type SourceReferenceDirection = "incoming" | "outgoing";
+type SourceReferenceFlowProperties = {
+  direction: SourceReferenceDirection;
+  label: string;
+  note: string;
+  relation: string;
+};
+type SourceReferenceFlow = {
+  from: [longitude: number, latitude: number];
+  id: string;
+  label: string;
+  metrics: {
+    weight: number;
+  };
+  properties: SourceReferenceFlowProperties;
+  to: [longitude: number, latitude: number];
+};
 
 const discoveryYears = historicalSources.map((source) => source.properties.discoveredYear);
 const earliestDiscoveryYear = Math.min(...discoveryYears);
@@ -31,6 +56,56 @@ const sourceYears = historicalSources.map((source) => source.properties.sourceYe
 const earliestSourceYear = Math.min(...sourceYears);
 const latestSourceYear = Math.max(...sourceYears);
 const sourceById = new Map(historicalSources.map((source) => [source.id, source]));
+const sourceReferenceLocations = new Map<string, [longitude: number, latitude: number]>([
+  ["Qumran cave inventories", [35.458, 31.741]],
+  ["Biblical manuscript studies", [35.214, 31.768]],
+  ["Hebrew Bible traditions", [35.214, 31.768]],
+  ["Qumran community rules", [35.458, 31.741]],
+  ["Decipherment histories", [2.352, 48.857]],
+  ["British Museum catalogues", [-0.127, 51.519]],
+  ["Ptolemy V Epiphanes", [29.919, 31.2]],
+  ["Greek, Demotic, and hieroglyphic scripts", [31.236, 30.044]],
+  ["Nag Hammadi codex editions", [31.236, 30.044]],
+  ["Early Christian studies", [29.919, 31.2]],
+  ["Gnostic revelation dialogues", [32.241, 26.052]],
+  ["Platonic and biblical language", [29.919, 31.2]],
+  ["Oxyrhynchus Papyri volumes", [-1.258, 51.752]],
+  ["Classical and documentary papyrology", [-1.258, 51.752]],
+  ["Greek literature", [23.728, 37.984]],
+  ["Daily administration", [30.652, 28.535]],
+  ["Derveni Papyrus editions", [22.944, 40.64]],
+  ["Greek philosophy and religion", [23.728, 37.984]],
+  ["Orphic poem", [22.919, 40.682]],
+  ["Ritual and cosmology", [22.919, 40.682]],
+  ["Tabulae Vindolandenses", [-0.127, 51.519]],
+  ["Roman Britain histories", [-0.127, 51.519]],
+  ["Roman frontier administration", [-2.36, 54.991]],
+  ["Personal correspondence", [-2.36, 54.991]],
+  ["Shipwreck excavation records", [23.307, 35.862]],
+  ["History of science studies", [23.728, 37.984]],
+  ["Astronomical cycles", [28.228, 36.434]],
+  ["Greek month and festival calendars", [23.728, 37.984]],
+  ["Cuneiform decipherment histories", [-0.127, 51.519]],
+  ["Achaemenid royal inscription corpora", [52.892, 29.935]],
+  ["Darius I's accession", [47.436, 34.386]],
+  ["Old Persian, Elamite, and Babylonian", [48.257, 32.19]],
+  ["El-Amarna tablet editions", [13.405, 52.52]],
+  ["Late Bronze Age studies", [30.9, 27.65]],
+  ["Near Eastern rulers", [30.9, 27.65]],
+  ["Tribute, marriage, and military requests", [30.9, 27.65]],
+  ["New Testament critical apparatuses", [7.625, 51.96]],
+  ["Codex Sinaiticus project records", [-0.127, 51.519]],
+  ["Greek Christian Bible", [33.973, 28.539]],
+  ["Early Christian book production", [29.919, 31.2]],
+  ["Old Babylonian law studies", [44.421, 32.536]],
+  ["Louvre Near Eastern collections", [2.336, 48.861]],
+  ["Hammurabi's kingship", [44.421, 32.536]],
+  ["Legal cases and penalties", [44.421, 32.536]],
+  ["Herculaneum papyri catalogues", [14.268, 40.852]],
+  ["Epicurean philosophy studies", [23.728, 37.984]],
+  ["Philodemus and Epicurean texts", [14.348, 40.806]],
+  ["Roman elite library culture", [14.348, 40.806]],
+]);
 
 const timelineModes: Record<
   TimelineMode,
@@ -112,6 +187,10 @@ export function App() {
 
   const selectedSource =
     visibleSources.find((source) => source.id === selectedSourceId) ?? sortedVisibleSources[0];
+  const selectedSourceReferenceFlows = useMemo(
+    () => (selectedSource ? createSourceReferenceFlows(selectedSource) : []),
+    [selectedSource],
+  );
 
   const sourceStats = useMemo(() => {
     const regions = new Set(visibleSources.map((source) => source.properties.region));
@@ -275,24 +354,42 @@ export function App() {
 
       <section className="source-layout" aria-label="Historical source map">
         <div className="source-map-panel" ref={mapPanelRef}>
-          <PointMap
+          <MapView
+            dataBounds={getBoundsFromPoints(visibleSources)}
             fitToData={false}
-            getFeatureId={(feature) => feature.point.id}
-            getPointColor={(feature) => sourceKindColors[getFeatureProperties(feature).kind]}
-            getPointRadius={(feature) => 7 + Math.min(8, feature.point.metrics.importance ?? 0)}
             initialViewState={{ center: [24, 35], zoom: 4 }}
             mapLabel="Map of historical source discovery locations"
-            onFeatureSelect={(feature) => {
-              if (feature) {
-                selectSource(feature.point.id);
-              }
-            }}
-            points={visibleSources}
-            renderFeaturePopup={(feature) => <SourcePopup feature={feature} />}
-            renderFeatureTooltip={(feature) => feature.point.label}
-            selectedFeatureId={selectedSource?.id ?? null}
             style={{ minHeight: 620 }}
-          />
+          >
+            <FlowLayer<SourceReferenceFlowProperties>
+              directionMarker="arrow"
+              flowShape="arc"
+              flows={selectedSourceReferenceFlows}
+              getFlowColor={(feature) =>
+                feature.flow.properties.direction === "incoming" ? "#1d4ed8" : "#0f766e"
+              }
+              maxWidth={3.25}
+              minWidth={2.25}
+              renderFeaturePopup={(feature) => <SourceReferencePopup feature={feature} />}
+              renderFeatureTooltip={(feature) => <SourceReferenceTooltip feature={feature} />}
+              showDirection
+              showEndpoints
+            />
+            <PointLayer
+              getFeatureId={(feature) => feature.point.id}
+              getPointColor={(feature) => sourceKindColors[getFeatureProperties(feature).kind]}
+              getPointRadius={(feature) => 7 + Math.min(8, feature.point.metrics.importance ?? 0)}
+              onFeatureSelect={(feature) => {
+                if (feature) {
+                  selectSource(feature.point.id);
+                }
+              }}
+              points={visibleSources}
+              renderFeaturePopup={(feature) => <SourcePopup feature={feature} />}
+              renderFeatureTooltip={(feature) => feature.point.label}
+              selectedFeatureId={selectedSource?.id ?? null}
+            />
+          </MapView>
           <div className="source-legend" aria-label="Map legend">
             {Object.entries(sourceKindLabels).map(([kind, label]) => (
               <span key={kind}>
@@ -300,6 +397,14 @@ export function App() {
                 {label}
               </span>
             ))}
+            <span className="source-legend__relation">
+              <i style={{ background: "#0f766e" }} />
+              References
+            </span>
+            <span className="source-legend__relation">
+              <i style={{ background: "#1d4ed8" }} />
+              Referenced by
+            </span>
           </div>
         </div>
 
@@ -731,8 +836,122 @@ function SourcePopup({ feature }: { feature: HistoricalSourceFeature }) {
   );
 }
 
+function SourceReferenceTooltip({
+  feature,
+}: {
+  feature: FlowMapLayerFeature<SourceReferenceFlowProperties>;
+}) {
+  const directionLabel =
+    feature.flow.properties.direction === "incoming" ? "Referenced by" : "References";
+
+  return (
+    <div className="source-popup source-reference-popup">
+      <strong>
+        {directionLabel}: {feature.flow.properties.label}
+      </strong>
+      <span>{feature.flow.properties.relation}</span>
+    </div>
+  );
+}
+
+function SourceReferencePopup({
+  feature,
+}: {
+  feature: FlowMapLayerFeature<SourceReferenceFlowProperties>;
+}) {
+  const directionLabel =
+    feature.flow.properties.direction === "incoming" ? "Referenced by" : "References";
+
+  return (
+    <div className="source-popup source-reference-popup">
+      <strong>
+        {directionLabel}: {feature.flow.properties.label}
+      </strong>
+      <span>{feature.flow.properties.relation}</span>
+      <span>{feature.flow.properties.note}</span>
+    </div>
+  );
+}
+
 function getFeatureProperties(feature: HistoricalSourceFeature) {
   return feature.point.properties ?? historicalSources[0]!.properties;
+}
+
+function createSourceReferenceFlows(source: HistoricalSource): SourceReferenceFlow[] {
+  return [
+    ...source.properties.referencedIn.map((relationship, index) =>
+      createSourceReferenceFlow(source, relationship, "incoming", index),
+    ),
+    ...source.properties.references.map((relationship, index) =>
+      createSourceReferenceFlow(source, relationship, "outgoing", index),
+    ),
+  ].filter((flow): flow is SourceReferenceFlow => flow !== null);
+}
+
+function createSourceReferenceFlow(
+  source: HistoricalSource,
+  relationship: HistoricalSource["properties"]["references"][number],
+  direction: SourceReferenceDirection,
+  index: number,
+): SourceReferenceFlow | null {
+  const referenceCoordinates = sourceReferenceLocations.get(relationship.label);
+
+  if (!referenceCoordinates) {
+    return null;
+  }
+
+  const sourceCoordinates: [number, number] = [source.longitude, source.latitude];
+  const targetCoordinates = offsetCoincidentReferenceCoordinate(
+    sourceCoordinates,
+    referenceCoordinates,
+    direction,
+    index,
+  );
+
+  return {
+    from: direction === "incoming" ? targetCoordinates : sourceCoordinates,
+    id: `${source.id}-${direction}-${slugifyReferenceLabel(relationship.label)}`,
+    label: relationship.label,
+    metrics: {
+      weight: 1,
+    },
+    properties: {
+      direction,
+      label: relationship.label,
+      note: relationship.note,
+      relation: relationship.relation,
+    },
+    to: direction === "incoming" ? sourceCoordinates : targetCoordinates,
+  };
+}
+
+function offsetCoincidentReferenceCoordinate(
+  sourceCoordinates: [longitude: number, latitude: number],
+  targetCoordinates: [longitude: number, latitude: number],
+  direction: SourceReferenceDirection,
+  index: number,
+): [longitude: number, latitude: number] {
+  if (
+    Math.abs(sourceCoordinates[0] - targetCoordinates[0]) > 0.001 ||
+    Math.abs(sourceCoordinates[1] - targetCoordinates[1]) > 0.001
+  ) {
+    return targetCoordinates;
+  }
+
+  const angle = ((index * 64 + (direction === "incoming" ? 28 : 156)) * Math.PI) / 180;
+  const distance = 0.58;
+
+  return [
+    targetCoordinates[0] + Math.cos(angle) * distance,
+    targetCoordinates[1] + Math.sin(angle) * distance,
+  ];
+}
+
+function slugifyReferenceLabel(label: string) {
+  return label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }
 
 function getTimelineYear(source: HistoricalSource, mode: TimelineMode) {
