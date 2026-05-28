@@ -45,6 +45,8 @@ export function AtlasFilters({
   resultCount: number;
   sourceKindFilters: SourceKindFilters;
 }) {
+  const filterActionsId = useId();
+  const [filtersMinimized, setFiltersMinimized] = useState(false);
   const [collapsedSourceKinds, setCollapsedSourceKinds] = useState<
     ReadonlySet<SourceKind>
   >(() => new Set());
@@ -90,97 +92,126 @@ export function AtlasFilters({
         );
       }}
       actions={
-        <div className="grid gap-4 text-xs font-semibold text-slate-600 xl:grid-cols-[minmax(0,1fr)_220px]">
-          <fieldset className="grid gap-2">
-            <legend>Source type scope</legend>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-[11px] font-bold uppercase text-slate-500">
-                Per source type
-              </span>
-              <button
-                className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-bold text-slate-700 shadow-sm shadow-slate-900/5"
-                type="button"
-                onClick={() => {
-                  onSourceKindFiltersChange(createDefaultSourceKindFilters());
-                }}
-              >
-                Reset
-              </button>
-            </div>
-            <div className="grid gap-2 md:grid-cols-2 2xl:grid-cols-3">
-              {allSourceKinds.map((kind) => (
-                <SourceKindScopeControl
-                  collapsed={collapsedSourceKinds.has(kind)}
-                  color={sourceKindColors[kind]}
-                  collapsedReferenceFilters={collapsedRelationshipFilters}
-                  filter={sourceKindFilters[kind]}
-                  kind={kind}
-                  key={kind}
-                  label={sourceKindLabels[kind]}
-                  onCollapsedChange={() => {
-                    setCollapsedSourceKinds((current) =>
-                      toggleSetValue(current, kind),
-                    );
-                  }}
-                  onFilterChange={(filter) => {
-                    onSourceKindFiltersChange(
-                      updateSourceKindFilter(sourceKindFilters, kind, filter),
-                    );
-                  }}
-                  onReferenceFilterCollapsedChange={(referenceKind) => {
-                    setCollapsedRelationshipFilters((current) =>
-                      toggleSetValue(
-                        current,
-                        getReferenceFilterCollapseKey(kind, referenceKind),
-                      ),
-                    );
-                  }}
-                />
-              ))}
-            </div>
-          </fieldset>
+        <div className="grid min-w-full gap-3 text-xs font-semibold text-slate-600">
+          <div className="flex justify-end">
+            <button
+              aria-controls={filterActionsId}
+              aria-expanded={!filtersMinimized}
+              className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-bold text-slate-700 shadow-sm shadow-slate-900/5"
+              type="button"
+              onClick={() => {
+                setFiltersMinimized((current) => !current);
+              }}
+            >
+              {filtersMinimized ? 'Expand filters' : 'Minimize filters'}
+            </button>
+          </div>
 
-          <fieldset className="grid gap-2">
-            <legend>Map links</legend>
-            <div className="flex flex-wrap gap-2">
-              <FilterCheckbox
-                checked={
-                  allReferenceDirectionsSelected
-                    ? true
-                    : referenceDirectionFilters.length > 0
-                      ? 'indeterminate'
-                      : false
-                }
-                label="All"
-                onCheckedChange={(checked) => {
-                  onReferenceDirectionFiltersChange(
-                    checked
-                      ? referenceDirectionOptions.map(
-                          (option) => option.direction,
-                        )
-                      : [],
-                  );
-                }}
-              />
-              {referenceDirectionOptions.map((option) => (
-                <FilterCheckbox
-                  checked={referenceDirectionFilters.includes(option.direction)}
-                  color={option.color}
-                  key={option.direction}
-                  label={option.label}
-                  onCheckedChange={(checked) => {
-                    onReferenceDirectionFiltersChange(
-                      getNextReferenceDirectionFilters(
-                        referenceDirectionFilters,
+          {filtersMinimized ? null : (
+            <div
+              className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_220px]"
+              id={filterActionsId}
+            >
+              <fieldset className="grid gap-2">
+                <legend>Source type scope</legend>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[11px] font-bold uppercase text-slate-500">
+                    Per source type
+                  </span>
+                  <button
+                    className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] font-bold text-slate-700 shadow-sm shadow-slate-900/5"
+                    type="button"
+                    onClick={() => {
+                      onSourceKindFiltersChange(
+                        createDefaultSourceKindFilters(),
+                      );
+                    }}
+                  >
+                    Reset
+                  </button>
+                </div>
+                <div className="grid gap-2 md:grid-cols-2 2xl:grid-cols-3">
+                  {allSourceKinds.map((kind) => (
+                    <SourceKindScopeControl
+                      collapsed={collapsedSourceKinds.has(kind)}
+                      color={sourceKindColors[kind]}
+                      collapsedReferenceFilters={collapsedRelationshipFilters}
+                      filter={sourceKindFilters[kind]}
+                      kind={kind}
+                      key={kind}
+                      label={sourceKindLabels[kind]}
+                      onCollapsedChange={() => {
+                        setCollapsedSourceKinds((current) =>
+                          toggleSetValue(current, kind),
+                        );
+                      }}
+                      onFilterChange={(filter) => {
+                        onSourceKindFiltersChange(
+                          updateSourceKindFilter(
+                            sourceKindFilters,
+                            kind,
+                            filter,
+                          ),
+                        );
+                      }}
+                      onReferenceFilterCollapsedChange={(referenceKind) => {
+                        setCollapsedRelationshipFilters((current) =>
+                          toggleSetValue(
+                            current,
+                            getReferenceFilterCollapseKey(kind, referenceKind),
+                          ),
+                        );
+                      }}
+                    />
+                  ))}
+                </div>
+              </fieldset>
+
+              <fieldset className="grid gap-2">
+                <legend>Map links</legend>
+                <div className="flex flex-wrap gap-2">
+                  <FilterCheckbox
+                    checked={
+                      allReferenceDirectionsSelected
+                        ? true
+                        : referenceDirectionFilters.length > 0
+                          ? 'indeterminate'
+                          : false
+                    }
+                    label="All"
+                    onCheckedChange={(checked) => {
+                      onReferenceDirectionFiltersChange(
+                        checked
+                          ? referenceDirectionOptions.map(
+                              (option) => option.direction,
+                            )
+                          : [],
+                      );
+                    }}
+                  />
+                  {referenceDirectionOptions.map((option) => (
+                    <FilterCheckbox
+                      checked={referenceDirectionFilters.includes(
                         option.direction,
-                        checked,
-                      ),
-                    );
-                  }}
-                />
-              ))}
+                      )}
+                      color={option.color}
+                      key={option.direction}
+                      label={option.label}
+                      onCheckedChange={(checked) => {
+                        onReferenceDirectionFiltersChange(
+                          getNextReferenceDirectionFilters(
+                            referenceDirectionFilters,
+                            option.direction,
+                            checked,
+                          ),
+                        );
+                      }}
+                    />
+                  ))}
+                </div>
+              </fieldset>
             </div>
-          </fieldset>
+          )}
         </div>
       }
     >

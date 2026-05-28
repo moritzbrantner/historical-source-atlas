@@ -118,6 +118,29 @@ test('reference direction filters update map link legend', async ({ page }) => {
   ).toBeVisible();
 });
 
+test('filter controls can be minimized and restored', async ({ page }) => {
+  await page.goto('/');
+
+  const sourceTypeScope = page
+    .locator('fieldset')
+    .filter({ hasText: 'Source type scope' });
+  const mapLinks = page.locator('fieldset').filter({ hasText: 'Map links' });
+
+  await expect(sourceTypeScope).toBeVisible();
+  await expect(mapLinks).toBeVisible();
+
+  await page.getByRole('button', { name: 'Minimize filters' }).click();
+
+  await expect(page.getByPlaceholder('Qumran, papyri, Iran...')).toBeVisible();
+  await expect(sourceTypeScope).toHaveCount(0);
+  await expect(mapLinks).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Expand filters' }).click();
+
+  await expect(sourceTypeScope).toBeVisible();
+  await expect(mapLinks).toBeVisible();
+});
+
 test('source list selection updates details and source-page navigation', async ({
   page,
 }) => {

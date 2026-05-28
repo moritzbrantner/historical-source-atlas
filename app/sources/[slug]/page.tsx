@@ -1,5 +1,6 @@
 import { AtlasProviders } from '@/src/atlas/app/AtlasProviders';
 import { SourceRoute } from '@/src/atlas/app/SourceRoute';
+import { AtlasWebShell } from '@/src/atlas/app/AtlasWebShell';
 import { historicalSources } from '@/src/atlas/entities/source/api/staticSourceData';
 
 export function generateStaticParams() {
@@ -15,7 +16,9 @@ export default async function SourceDetailPage({
 
   return (
     <AtlasProviders>
-      <SourceRoute sourceId={slug} />
+      <AtlasWebShell>
+        <SourceRoute sourceId={slug} />
+      </AtlasWebShell>
     </AtlasProviders>
   );
 }
