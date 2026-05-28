@@ -1,5 +1,14 @@
 import type { SourceKind } from "./sourceTypes";
 
+export const allSourceKinds: readonly SourceKind[] = [
+  "archive",
+  "artifact",
+  "collection",
+  "inscription",
+  "manuscript",
+  "text",
+];
+
 export const sourceKindLabels: Record<SourceKind, string> = {
   archive: "Archive",
   artifact: "Artifact",

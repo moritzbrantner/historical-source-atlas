@@ -1,6 +1,7 @@
 import { Badge, Button, Slider, Surface } from "@moritzbrantner/ui";
 
 import { formatTimelineYear } from "../../entities/source/lib/sourceFormatting";
+import type { YearRange } from "../../entities/source/lib/sourceFiltering";
 import type { TimelineMode, TimelineModeConfig } from "./model/atlasTypes";
 
 export function TimelineControl({
@@ -9,19 +10,24 @@ export function TimelineControl({
   mode,
   modeConfig,
   onModeChange,
-  onTimelineYearChange,
+  onTimelineRangeChange,
   sourceCount,
-  timelineYear,
+  timelineRange,
 }: {
   maxYear: number;
   minYear: number;
   mode: TimelineMode;
   modeConfig: TimelineModeConfig;
   onModeChange: (mode: TimelineMode) => void;
-  onTimelineYearChange: (year: number) => void;
+  onTimelineRangeChange: (range: YearRange) => void;
   sourceCount: number;
-  timelineYear: number;
+  timelineRange: YearRange;
 }) {
+  const timelineRangeLabel = `${formatTimelineYear(timelineRange.min, mode)}-${formatTimelineYear(
+    timelineRange.max,
+    mode,
+  )}`;
+
   return (
     <Surface
       aria-label="Timeline controls"
@@ -33,7 +39,7 @@ export function TimelineControl({
             {modeConfig.label} timeline
           </span>
           <strong className="truncate text-lg font-bold text-slate-950">
-            {modeConfig.title} {formatTimelineYear(timelineYear, mode)}
+            {modeConfig.title} {timelineRangeLabel}
           </strong>
         </div>
         <Badge>{sourceCount} visible</Badge>
@@ -59,10 +65,13 @@ export function TimelineControl({
           max={maxYear}
           min={minYear}
           step={1}
-          thumbAriaLabel={`${modeConfig.label} year`}
-          value={[timelineYear]}
+          thumbAriaLabel={`${modeConfig.label} range`}
+          value={[timelineRange.min, timelineRange.max]}
           onValueChange={(value) => {
-            onTimelineYearChange(value[0] ?? timelineYear);
+            onTimelineRangeChange({
+              max: value[1] ?? timelineRange.max,
+              min: value[0] ?? timelineRange.min,
+            });
           }}
         />
         <span>{formatTimelineYear(maxYear, mode)}</span>
@@ -73,19 +82,10 @@ export function TimelineControl({
           type="button"
           variant="secondary"
           onClick={() => {
-            onTimelineYearChange(minYear);
+            onTimelineRangeChange({ max: maxYear, min: minYear });
           }}
         >
-          Start
-        </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => {
-            onTimelineYearChange(maxYear);
-          }}
-        >
-          Show all
+          Full range
         </Button>
       </div>
     </Surface>

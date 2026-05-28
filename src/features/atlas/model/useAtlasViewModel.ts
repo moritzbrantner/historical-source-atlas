@@ -1,31 +1,62 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { filterSources, sortSourcesByTimeline } from "../../../entities/source/lib/sourceFiltering";
-import { createSourceReferenceFlows } from "../../../entities/source/lib/sourceReferences";
+import {
+  filterSources,
+  sortSourcesByTimeline,
+  type SourceKindFilters,
+  type YearRange,
+} from "../../../entities/source/lib/sourceFiltering";
+import {
+  createSourceReferenceFlows,
+  type SourceReferenceDirection,
+} from "../../../entities/source/lib/sourceReferences";
+import { allSourceKinds } from "../../../entities/source/model/sourceConstants";
 import type { HistoricalSource } from "../../../entities/source/model/sourceTypes";
-import type { TimelineModeConfig, SourceFilter, TimelineMode } from "./atlasTypes";
+import type { TimelineModeConfig, TimelineMode } from "./atlasTypes";
 
 const defaultSelectedSourceId = "dead-sea-scrolls";
+const defaultReferenceDirections: SourceReferenceDirection[] = ["incoming", "outgoing"];
+const defaultRelationshipDepth = 1;
 
 export function useAtlasViewModel(sources: HistoricalSource[]) {
   const [selectedSourceId, setSelectedSourceId] = useState(defaultSelectedSourceId);
-  const [kindFilter, setKindFilter] = useState<SourceFilter>("all");
+  const [sourceKindFilters, setSourceKindFilters] = useState<SourceKindFilters>(() =>
+    createDefaultSourceKindFilters(),
+  );
+  const [referenceDirectionFilters, setReferenceDirectionFilters] = useState([
+    ...defaultReferenceDirections,
+  ]);
   const [query, setQuery] = useState("");
   const [timelineMode, setTimelineMode] = useState<TimelineMode>("discovery");
-  const [timelineYears, setTimelineYears] = useState<Partial<Record<TimelineMode, number>>>({});
   const timelineModes = useMemo(() => getTimelineModes(sources), [sources]);
   const activeTimelineMode = timelineModes[timelineMode];
-  const timelineYear = timelineYears[timelineMode] ?? activeTimelineMode.maxYear;
+  const [timelineRanges, setTimelineRanges] = useState<Partial<Record<TimelineMode, YearRange>>>(
+    {},
+  );
+  const activeTimelineRange =
+    timelineRanges[timelineMode] ??
+    getFullTimelineRange(activeTimelineMode.minYear, activeTimelineMode.maxYear);
+  const resolvedTimelineRanges = useMemo(
+    () => ({
+      discovery:
+        timelineRanges.discovery ??
+        getFullTimelineRange(timelineModes.discovery.minYear, timelineModes.discovery.maxYear),
+      source:
+        timelineRanges.source ??
+        getFullTimelineRange(timelineModes.source.minYear, timelineModes.source.maxYear),
+    }),
+    [timelineModes, timelineRanges],
+  );
 
   const visibleSources = useMemo(
     () =>
       filterSources(sources, {
-        kind: kindFilter,
         query,
-        timelineMode,
-        timelineYear,
+        selectedSourceId,
+        sourceKinds: sourceKindFilters,
+        timelineRanges: resolvedTimelineRanges,
       }),
-    [kindFilter, query, sources, timelineMode, timelineYear],
+    [query, resolvedTimelineRanges, selectedSourceId, sourceKindFilters, sources],
   );
 
   const sortedVisibleSources = useMemo(
@@ -37,8 +68,13 @@ export function useAtlasViewModel(sources: HistoricalSource[]) {
     visibleSources.find((source) => source.id === selectedSourceId) ?? sortedVisibleSources[0];
 
   const selectedSourceReferenceFlows = useMemo(
-    () => (selectedSource ? createSourceReferenceFlows(selectedSource) : []),
-    [selectedSource],
+    () =>
+      selectedSource
+        ? createSourceReferenceFlows(selectedSource).filter((flow) =>
+            referenceDirectionFilters.includes(flow.properties.direction),
+          )
+        : [],
+    [referenceDirectionFilters, selectedSource],
   );
 
   const sourceStats = useMemo(() => {
@@ -64,25 +100,47 @@ export function useAtlasViewModel(sources: HistoricalSource[]) {
 
   return {
     activeTimelineMode,
-    kindFilter,
     query,
+    referenceDirectionFilters,
     selectedSource,
     selectedSourceId,
     selectedSourceReferenceFlows,
-    setKindFilter,
     setQuery,
+    setReferenceDirectionFilters,
     setSelectedSourceId,
+    setSourceKindFilters,
     setTimelineMode,
-    setTimelineYear: (year: number) => {
-      setTimelineYears((current) => ({ ...current, [timelineMode]: year }));
+    setTimelineRange: (range: YearRange) => {
+      setTimelineRanges((current) => ({
+        ...current,
+        [timelineMode]: clampYearRange(
+          range,
+          activeTimelineMode.minYear,
+          activeTimelineMode.maxYear,
+        ),
+      }));
     },
     sortedVisibleSources,
+    sourceKindFilters,
     sourceStats,
+    timelineRange: activeTimelineRange,
+    timelineRanges: resolvedTimelineRanges,
     timelineMode,
     timelineModes,
-    timelineYear,
     visibleSources,
   };
+}
+
+export function createDefaultSourceKindFilters(): SourceKindFilters {
+  return Object.fromEntries(
+    allSourceKinds.map((kind) => [
+      kind,
+      {
+        depth: defaultRelationshipDepth,
+        mode: "all",
+      },
+    ]),
+  ) as SourceKindFilters;
 }
 
 function getTimelineModes(sources: HistoricalSource[]): Record<TimelineMode, TimelineModeConfig> {
@@ -102,5 +160,19 @@ function getTimelineModes(sources: HistoricalSource[]): Record<TimelineMode, Tim
       minYear: Math.min(...sourceYears, 0),
       title: "Sources dated by",
     },
+  };
+}
+
+function getFullTimelineRange(min: number, max: number): YearRange {
+  return { max, min };
+}
+
+function clampYearRange(range: YearRange, min: number, max: number): YearRange {
+  const rangeMin = Math.max(min, Math.min(max, range.min));
+  const rangeMax = Math.max(rangeMin, Math.min(max, range.max));
+
+  return {
+    max: rangeMax,
+    min: rangeMin,
   };
 }

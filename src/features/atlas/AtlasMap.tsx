@@ -7,11 +7,16 @@ import {
   type FlowMapLayerFeature,
 } from "@moritzbrantner/maps";
 
-import { sourceKindColors, sourceKindLabels } from "../../entities/source/model/sourceConstants";
-import type { HistoricalSource, SourceKind } from "../../entities/source/model/sourceTypes";
+import {
+  allSourceKinds,
+  sourceKindColors,
+  sourceKindLabels,
+} from "../../entities/source/model/sourceConstants";
+import type { HistoricalSource } from "../../entities/source/model/sourceTypes";
 import {
   getFeatureProperties,
   type HistoricalSourceFeature,
+  type SourceReferenceDirection,
   type SourceReferenceFlow,
   type SourceReferenceFlowProperties,
 } from "../../entities/source/lib/sourceReferences";
@@ -19,15 +24,20 @@ import {
 export function AtlasMap({
   flows,
   onSelectSource,
+  referenceDirectionFilters,
   selectedSourceId,
   sources,
 }: {
   flows: SourceReferenceFlow[];
   onSelectSource: (sourceId: string) => void;
+  referenceDirectionFilters: SourceReferenceDirection[];
   selectedSourceId: string | null;
   sources: HistoricalSource[];
 }) {
   const mapPanelRef = useRef<HTMLDivElement | null>(null);
+  const visibleSourceKinds = allSourceKinds.filter((sourceKind) =>
+    sources.some((source) => source.properties.kind === sourceKind),
+  );
 
   useEffect(() => {
     const panel = mapPanelRef.current;
@@ -101,20 +111,24 @@ export function AtlasMap({
         className="pointer-events-none absolute inset-x-4 bottom-4 z-[520] flex flex-wrap gap-2"
         aria-label="Map legend"
       >
-        {Object.entries(sourceKindLabels).map(([kind, label]) => (
+        {visibleSourceKinds.map((kind) => (
           <span
             className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/95 px-3 py-2 text-xs font-semibold text-slate-900 shadow-lg shadow-slate-900/10"
             key={kind}
           >
             <i
               className="h-2.5 w-2.5 rounded-full"
-              style={{ background: sourceKindColors[kind as SourceKind] }}
+              style={{ background: sourceKindColors[kind] }}
             />
-            {label}
+            {sourceKindLabels[kind]}
           </span>
         ))}
-        <LegendLine color="#0f766e" label="References" />
-        <LegendLine color="#1d4ed8" label="Referenced by" />
+        {referenceDirectionFilters.includes("outgoing") ? (
+          <LegendLine color="#0f766e" label="References" />
+        ) : null}
+        {referenceDirectionFilters.includes("incoming") ? (
+          <LegendLine color="#1d4ed8" label="Referenced by" />
+        ) : null}
       </div>
     </div>
   );

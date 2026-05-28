@@ -57,11 +57,13 @@ export function AtlasPage({ onOpenSource }: { onOpenSource: (sourceId: string) =
         </div>
         <PageActions>
           <AtlasFilters
-            kindFilter={atlas.kindFilter}
             query={atlas.query}
+            referenceDirectionFilters={atlas.referenceDirectionFilters}
             resultCount={atlas.visibleSources.length}
-            onKindFilterChange={atlas.setKindFilter}
+            sourceKindFilters={atlas.sourceKindFilters}
             onQueryChange={atlas.setQuery}
+            onReferenceDirectionFiltersChange={atlas.setReferenceDirectionFilters}
+            onSourceKindFiltersChange={atlas.setSourceKindFilters}
           />
         </PageActions>
       </PageHeader>
@@ -73,9 +75,9 @@ export function AtlasPage({ onOpenSource }: { onOpenSource: (sourceId: string) =
           mode={atlas.timelineMode}
           modeConfig={atlas.activeTimelineMode}
           sourceCount={atlas.visibleSources.length}
-          timelineYear={atlas.timelineYear}
+          timelineRange={atlas.timelineRange}
           onModeChange={atlas.setTimelineMode}
-          onTimelineYearChange={atlas.setTimelineYear}
+          onTimelineRangeChange={atlas.setTimelineRange}
         />
 
         <section
@@ -84,6 +86,7 @@ export function AtlasPage({ onOpenSource }: { onOpenSource: (sourceId: string) =
         >
           <AtlasMap
             flows={atlas.selectedSourceReferenceFlows}
+            referenceDirectionFilters={atlas.referenceDirectionFilters}
             selectedSourceId={atlas.selectedSource?.id ?? null}
             sources={atlas.visibleSources}
             onSelectSource={atlas.setSelectedSourceId}

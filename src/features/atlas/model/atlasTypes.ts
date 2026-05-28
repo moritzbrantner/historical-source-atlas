@@ -1,14 +1,14 @@
-import type { SourceKind } from "../../../entities/source/model/sourceTypes";
 import type { TimelineMode } from "../../../entities/source/model/sourceTimeline";
+import type { SourceKindFilters, YearRange } from "../../../entities/source/lib/sourceFiltering";
+import type { SourceReferenceDirection } from "../../../entities/source/lib/sourceReferences";
 
-export type SourceFilter = SourceKind | "all";
 export type { TimelineMode };
 
 export type AtlasFilters = {
-  kind: SourceFilter;
+  referenceDirections: SourceReferenceDirection[];
+  sourceKinds: SourceKindFilters;
   query: string;
-  timelineMode: TimelineMode;
-  timelineYear: number;
+  timelineRanges: Record<TimelineMode, YearRange>;
 };
 
 export type TimelineModeConfig = {
