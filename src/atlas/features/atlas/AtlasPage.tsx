@@ -17,6 +17,13 @@ import {
 import { useAtlasSourcesQuery } from '../../entities/source/api/sourceQueries';
 import type { SourceRepository } from '../../entities/source/api/sourceRepository';
 import {
+  useAddAtlasCollectionItemMutation,
+  useAtlasCollectionsQuery,
+  useCreateAtlasCollectionMutation,
+  useReplaceAtlasCollectionItemsMutation,
+  useUpdateAtlasCollectionMutation,
+} from '../../entities/collections/api/collectionQueries';
+import {
   useAtlasSourceTagsQuery,
   useReplaceAtlasSourceTagsMutation,
 } from '../../entities/source-tags/api/sourceTagQueries';
@@ -35,7 +42,13 @@ export function AtlasPage({
 }) {
   const sourcesQuery = useAtlasSourcesQuery(sourceRepository);
   const sourceTagsQuery = useAtlasSourceTagsQuery();
+  const collectionsQuery = useAtlasCollectionsQuery();
   const replaceSourceTagsMutation = useReplaceAtlasSourceTagsMutation();
+  const createCollectionMutation = useCreateAtlasCollectionMutation();
+  const updateCollectionMutation = useUpdateAtlasCollectionMutation();
+  const addCollectionItemMutation = useAddAtlasCollectionItemMutation();
+  const replaceCollectionItemsMutation =
+    useReplaceAtlasCollectionItemsMutation();
   const sources = sourcesQuery.data ?? [];
   const atlas = useAtlasViewModel(sources);
   const sourceTags = sourceTagsQuery.data?.tags ?? [];
@@ -126,6 +139,26 @@ export function AtlasPage({
               sourceTagsQuery.data?.authenticated ?? false
             }
             sourceTagsBySourceId={sourceTagsBySourceId}
+            collections={collectionsQuery.data?.collections ?? []}
+            collectionsAuthenticated={
+              collectionsQuery.data?.authenticated ?? false
+            }
+            collectionsError={
+              createCollectionMutation.error?.message ??
+              updateCollectionMutation.error?.message ??
+              addCollectionItemMutation.error?.message ??
+              replaceCollectionItemsMutation.error?.message ??
+              (collectionsQuery.isError
+                ? 'Could not load your collections.'
+                : null)
+            }
+            collectionsLoading={collectionsQuery.isLoading}
+            collectionsSaving={
+              createCollectionMutation.isPending ||
+              updateCollectionMutation.isPending ||
+              addCollectionItemMutation.isPending ||
+              replaceCollectionItemsMutation.isPending
+            }
             sourceTagsError={
               replaceSourceTagsMutation.error?.message ??
               (sourceTagsQuery.isError
@@ -139,8 +172,26 @@ export function AtlasPage({
             sourceStats={atlas.sourceStats}
             sources={atlas.sortedVisibleSources}
             timelineMode={atlas.timelineMode}
+            onAddSourceToCollection={(input) =>
+              addCollectionItemMutation.mutateAsync(input)
+            }
+            onCreateCollection={(input) =>
+              createCollectionMutation.mutateAsync(input)
+            }
             onOpenSource={onOpenSource}
+            onReplaceCollectionItems={(collectionId, items) =>
+              replaceCollectionItemsMutation.mutateAsync({
+                collectionId,
+                items,
+              })
+            }
             onSelectSource={atlas.setSelectedSourceId}
+            onUpdateCollection={(collectionId, input) =>
+              updateCollectionMutation.mutateAsync({
+                collectionId,
+                ...input,
+              })
+            }
             onUpdateSourceTags={(sourceId, tags) =>
               replaceSourceTagsMutation.mutateAsync({ sourceId, tags })
             }

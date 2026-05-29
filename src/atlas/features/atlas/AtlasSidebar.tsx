@@ -9,6 +9,7 @@ import {
 import { Tag } from 'lucide-react';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 
+import type { AtlasCollection } from '../../entities/collections/model/collections';
 import { getTimelineLabel } from '../../entities/source/lib/sourceFormatting';
 import { sourceKindLabels } from '../../entities/source/model/sourceConstants';
 import type { HistoricalSource } from '../../entities/source/model/sourceTypes';
@@ -18,6 +19,7 @@ import {
 } from '../../entities/source-tags/model/sourceTags';
 import { EmptyState } from '../../shared/ui/EmptyState';
 import { MetricStats } from '../../shared/ui/MetricStats';
+import { AtlasCollectionsPanel } from './AtlasCollectionsPanel';
 import type { TimelineMode } from './model/atlasTypes';
 
 const selectedSourceClassName =
@@ -26,8 +28,17 @@ const emptySourceTags: readonly string[] = [];
 
 export function AtlasSidebar({
   allSources,
+  collections,
+  collectionsAuthenticated,
+  collectionsError,
+  collectionsLoading,
+  collectionsSaving,
+  onAddSourceToCollection,
+  onCreateCollection,
   onOpenSource,
+  onReplaceCollectionItems,
   onSelectSource,
+  onUpdateCollection,
   onUpdateSourceTags,
   sourceTagsAuthenticated,
   sourceTagsBySourceId,
@@ -41,8 +52,35 @@ export function AtlasSidebar({
   timelineMode,
 }: {
   allSources: HistoricalSource[];
+  collections: AtlasCollection[];
+  collectionsAuthenticated: boolean;
+  collectionsError: string | null;
+  collectionsLoading: boolean;
+  collectionsSaving: boolean;
+  onAddSourceToCollection: (input: {
+    collectionId: string;
+    note?: string | null;
+    sourceId: string;
+  }) => Promise<unknown>;
+  onCreateCollection: (input: {
+    isPublic: boolean;
+    name: string;
+    notes?: string | null;
+  }) => Promise<unknown>;
   onOpenSource: (sourceId: string) => void;
+  onReplaceCollectionItems: (
+    collectionId: string,
+    items: Array<{ note?: string | null; sourceId: string }>,
+  ) => Promise<unknown>;
   onSelectSource: (sourceId: string) => void;
+  onUpdateCollection: (
+    collectionId: string,
+    input: {
+      isPublic: boolean;
+      name: string;
+      notes?: string | null;
+    },
+  ) => Promise<unknown>;
   onUpdateSourceTags: (sourceId: string, tags: string[]) => Promise<unknown>;
   sourceTagsAuthenticated: boolean;
   sourceTagsBySourceId: ReadonlyMap<string, readonly string[]>;
@@ -91,6 +129,21 @@ export function AtlasSidebar({
         allSources={allSources}
         sourceTagsBySourceId={sourceTagsBySourceId}
         onSelectSource={onSelectSource}
+      />
+
+      <AtlasCollectionsPanel
+        authenticated={collectionsAuthenticated}
+        collections={collections}
+        error={collectionsError}
+        loading={collectionsLoading}
+        saving={collectionsSaving}
+        selectedSource={selectedSource}
+        sources={allSources}
+        onAddSource={onAddSourceToCollection}
+        onCreate={onCreateCollection}
+        onReplaceItems={onReplaceCollectionItems}
+        onSelectSource={onSelectSource}
+        onUpdate={onUpdateCollection}
       />
 
       <Surface aria-label="Source list">

@@ -8,6 +8,7 @@ import {
   isValidAtlasSourceId,
   normalizeAtlasSourceTags,
 } from '../entities/source-tags/model/sourceTags';
+import { syncAtlasCollectionsForSourceTags } from './atlasCollections';
 import { getAtlasSourceFromDb } from './atlasSourceRepository';
 
 export type AtlasSourceTagErrorCode = 'NOT_FOUND' | 'VALIDATION_ERROR';
@@ -101,6 +102,12 @@ export async function replaceAtlasSourceTagsForUser(input: {
         updatedAt: now,
       })),
     );
+  });
+
+  await syncAtlasCollectionsForSourceTags({
+    sourceId: input.sourceId,
+    tags: normalizedTags.tags,
+    userId: input.userId,
   });
 
   return {

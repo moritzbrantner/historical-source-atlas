@@ -116,6 +116,7 @@ export function useReplaceAtlasSourceTagsMutation() {
           };
         },
       );
+      queryClient.invalidateQueries({ queryKey: ['atlas-collections'] });
     },
   });
 }

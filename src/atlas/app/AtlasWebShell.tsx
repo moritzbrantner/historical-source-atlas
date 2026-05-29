@@ -162,7 +162,8 @@ function getActiveNavbarItemId(pathname: string | null) {
 
   if (
     normalizedPathname === '/atlas' ||
-    normalizedPathname.startsWith('/atlas/sources/')
+    normalizedPathname.startsWith('/atlas/sources/') ||
+    normalizedPathname.startsWith('/atlas/collections/')
   ) {
     return 'atlas';
   }
