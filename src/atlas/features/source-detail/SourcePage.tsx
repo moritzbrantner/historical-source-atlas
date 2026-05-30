@@ -30,6 +30,7 @@ import type { HistoricalSource } from '../../entities/source/model/sourceTypes';
 import { getFeatureProperties } from '../../entities/source/lib/sourceReferences';
 import { MetricStats } from '../../shared/ui/MetricStats';
 import { EmptyState } from '../../shared/ui/EmptyState';
+import { EvidenceReviewPanel } from '../evidence-review/EvidenceReviewPanel';
 import { SourcePopup } from '../atlas/AtlasMap';
 import { RelatedSources } from './RelatedSources';
 import { SourceComparison } from './SourceComparison';
@@ -135,6 +136,7 @@ export function SourcePage({
               </SurfaceContent>
             </Surface>
 
+            <EvidenceReviewPanel source={source} />
             <SourceReferenceNetwork source={source} />
             <SourceComparison
               source={source}

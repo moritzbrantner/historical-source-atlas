@@ -16,6 +16,12 @@ test('direct source route renders source page', async ({ page }) => {
     page.getByRole('heading', { name: 'Detailed Information' }),
   ).toBeVisible();
   await expect(
+    page.getByRole('heading', { name: 'Evidence Review' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: /community in the wilderness/ }),
+  ).toBeVisible();
+  await expect(
     page.getByRole('heading', { name: 'Reference Network' }),
   ).toBeVisible();
   await expect(
@@ -107,6 +113,9 @@ test('mobile source page remains usable without horizontal overflow', async ({
   await expect(page.getByText('Location')).toBeVisible();
   await expect(
     page.getByRole('heading', { name: 'Reference Network' }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Evidence Review' }),
   ).toBeVisible();
   await expect(
     page.getByRole('heading', { name: 'Atlas Context' }),

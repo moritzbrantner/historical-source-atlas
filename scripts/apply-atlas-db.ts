@@ -10,7 +10,10 @@ const migrationFiles = [
   'db/atlas/migrations/001_initial_schema.sql',
   'db/atlas/migrations/002_referenced_entities.sql',
 ];
-const seedFiles = ['db/atlas/seeds/001_current_static_sources.sql'];
+const seedFiles = [
+  'db/atlas/seeds/001_current_static_sources.sql',
+  'db/atlas/seeds/002_evidence_review_examples.sql',
+];
 
 async function applySqlFile(pool: Pool, path: string) {
   const sql = await readFile(resolve(path), 'utf8');
