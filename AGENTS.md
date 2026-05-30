@@ -68,7 +68,6 @@ There is no root `release` or `publish` script. Package publishing is documented
 
 - Prefer `rg --files` to list files and `rg "<term>"` to search source.
 - Use focused file reads (`sed -n`, `nl -ba`) after search results identify likely owners.
-- Use `semble search` for semantic orientation when available, especially before cross-cutting refactors or when names are inconsistent.
 - Useful starting points: `package.json`, `README.md`, `ARCHITECTURE.md`, `docs/platform-layout.md`, `docs/development.md`, `app.config.ts`, and `app.manifest.ts`.
 
 ## Docker And Codex/T3 Cleanup
