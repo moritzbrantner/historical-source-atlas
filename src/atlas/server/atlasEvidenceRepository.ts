@@ -1,5 +1,6 @@
 import { getPool } from '@/src/db/client';
 
+import { staticEvidenceRepository } from '../entities/evidence/api/staticEvidenceRepository';
 import type {
   EvidenceLayerId,
   EvidenceOverlay,
@@ -74,6 +75,16 @@ export async function getAtlasEvidenceReviewFromDb(slug: string) {
   }
 
   const units = await readEvidenceUnits(source.id);
+
+  if (units.length === 0) {
+    const staticReview = await staticEvidenceRepository.getEvidenceBySourceSlug(
+      source.slug,
+    );
+
+    if (staticReview?.units.length) {
+      return staticReview;
+    }
+  }
 
   return {
     layers: evidenceOverlayLayers,

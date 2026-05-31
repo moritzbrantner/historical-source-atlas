@@ -1,3 +1,8 @@
+import type {
+  EvidenceImageAsset,
+  EvidenceImageRegion,
+} from './manuscriptEvidenceTypes';
+
 export type EvidenceOverlayKind =
   | 'highlight'
   | 'translation'
@@ -27,6 +32,7 @@ export type EvidenceOverlay = {
   startOffset: number;
   endOffset: number;
   certainty: string | null;
+  imageRegions?: EvidenceImageRegion[];
   targetEntityId?: string | null;
   targetEntityLabel?: string | null;
   targetEntitySlug?: string | null;
@@ -48,7 +54,10 @@ export type EvidenceReview = {
   title: string;
   layers: EvidenceOverlayLayer[];
   units: EvidenceTextUnit[];
+  imageAssets?: EvidenceImageAsset[];
 };
+
+export type { EvidenceImageAsset, EvidenceImageRegion };
 
 export const evidenceOverlayLayers: EvidenceOverlayLayer[] = [
   {

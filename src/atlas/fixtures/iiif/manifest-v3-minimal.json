@@ -1,0 +1,80 @@
+{
+  "@context": "http://iiif.io/api/presentation/3/context.json",
+  "id": "https://example.test/iiif/manifest-v3",
+  "type": "Manifest",
+  "label": { "en": ["Minimal v3 manifest"] },
+  "provider": [{ "label": { "en": ["Example Library"] } }],
+  "rights": "https://creativecommons.org/publicdomain/mark/1.0/",
+  "requiredStatement": {
+    "label": { "en": ["Attribution"] },
+    "value": { "en": ["Example Library attribution"] }
+  },
+  "items": [
+    {
+      "id": "https://example.test/iiif/canvas/1",
+      "type": "Canvas",
+      "label": { "en": ["f. 1r"] },
+      "width": 1000,
+      "height": 800,
+      "items": [
+        {
+          "id": "https://example.test/iiif/page/1",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.test/iiif/annotation/1",
+              "type": "Annotation",
+              "motivation": "painting",
+              "body": {
+                "id": "https://example.test/iiif/image/1/full/800,/0/default.jpg",
+                "type": "Image",
+                "format": "image/jpeg",
+                "width": 800,
+                "height": 640,
+                "service": [
+                  {
+                    "@id": "https://example.test/iiif/image2/1",
+                    "@type": "ImageService2"
+                  },
+                  {
+                    "id": "https://example.test/iiif/image3/1",
+                    "type": "ImageService3"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://example.test/iiif/canvas/2",
+      "type": "Canvas",
+      "label": { "en": ["f. 1v"] },
+      "width": 1200,
+      "height": 900,
+      "items": [
+        {
+          "id": "https://example.test/iiif/page/2",
+          "type": "AnnotationPage",
+          "items": [
+            {
+              "id": "https://example.test/iiif/annotation/2",
+              "type": "Annotation",
+              "motivation": "painting",
+              "body": {
+                "id": "https://example.test/iiif/image/2/full/800,/0/default.jpg",
+                "type": "Image",
+                "format": "image/jpeg",
+                "service": {
+                  "id": "https://example.test/iiif/image3/2",
+                  "type": "ImageService3"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

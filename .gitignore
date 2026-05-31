@@ -50,3 +50,4 @@ test-results/
 playwright-report/
 /.generated/
 public/local-profile-images/
+public/atlas-manuscripts/

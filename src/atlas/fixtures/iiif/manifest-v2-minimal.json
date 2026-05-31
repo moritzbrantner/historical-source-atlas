@@ -1,0 +1,41 @@
+{
+  "@context": "http://iiif.io/api/presentation/2/context.json",
+  "@id": "https://example.test/iiif/manifest-v2",
+  "@type": "sc:Manifest",
+  "label": "Minimal v2 manifest",
+  "attribution": "Example Library attribution",
+  "license": "https://creativecommons.org/publicdomain/mark/1.0/",
+  "sequences": [
+    {
+      "@id": "https://example.test/iiif/sequence/normal",
+      "@type": "sc:Sequence",
+      "canvases": [
+        {
+          "@id": "https://example.test/iiif/v2/canvas/1",
+          "@type": "sc:Canvas",
+          "label": "f. 1r",
+          "width": 1000,
+          "height": 800,
+          "images": [
+            {
+              "@id": "https://example.test/iiif/v2/annotation/1",
+              "@type": "oa:Annotation",
+              "motivation": "sc:painting",
+              "resource": {
+                "@id": "https://example.test/iiif/v2/image/1/full/800,/0/default.jpg",
+                "@type": "dctypes:Image",
+                "format": "image/jpeg",
+                "width": 800,
+                "height": 640,
+                "service": {
+                  "@id": "https://example.test/iiif/v2/image-service/1",
+                  "@type": "ImageService2"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

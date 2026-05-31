@@ -15,6 +15,9 @@ import { EvidenceReviewPanel } from './EvidenceReviewPanel';
 const deadSeaScrolls = historicalSources.find(
   (source) => source.id === 'dead-sea-scrolls',
 )!;
+const codexSinaiticus = historicalSources.find(
+  (source) => source.id === 'codex-sinaiticus',
+)!;
 
 afterEach(() => {
   cleanup();
@@ -66,6 +69,67 @@ describe('EvidenceReviewPanel', () => {
     expect(
       screen.getByText('Certainty: illustrative fixture'),
     ).toBeInTheDocument();
+  });
+
+  it('renders manuscript image evidence when image assets exist', async () => {
+    renderEvidencePanel(codexSinaiticus, staticEvidenceRepository);
+
+    expect(
+      await screen.findByTestId('manuscript-image-viewer'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Add MS 43725, f. 1r excerpt')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', {
+        name: /First column line group image region on f\. 1r/,
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it('selecting text highlights its manuscript image region', async () => {
+    const user = userEvent.setup();
+    renderEvidencePanel(codexSinaiticus, staticEvidenceRepository);
+
+    await user.click(
+      await screen.findByRole('button', { name: /φυλάσσειν: ΦΥΛΑΣΣΕΙΝ/ }),
+    );
+
+    expect(
+      screen.getByRole('button', {
+        name: /φυλάσσειν image region on f\. 1r/,
+      }),
+    ).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('clicking an image region updates overlay details', async () => {
+    const user = userEvent.setup();
+    renderEvidencePanel(codexSinaiticus, staticEvidenceRepository);
+
+    await user.click(
+      await screen.findByRole('button', {
+        name: /φυλάσσειν image region on f\. 1r/,
+      }),
+    );
+
+    expect(
+      screen.getByText(/to keep the watches \/ guard posts/),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Canvas: f. 1r')).toBeInTheDocument();
+  });
+
+  it('layer toggles hide matching manuscript image regions', async () => {
+    const user = userEvent.setup();
+    renderEvidencePanel(codexSinaiticus, staticEvidenceRepository);
+
+    await screen.findByRole('button', {
+      name: /φυλάσσειν image region on f\. 1r/,
+    });
+    await user.click(screen.getByRole('button', { name: 'Translations' }));
+
+    expect(
+      screen.queryByRole('button', {
+        name: /φυλάσσειν image region on f\. 1r/,
+      }),
+    ).not.toBeInTheDocument();
   });
 
   it('shows an empty state for sources with no units', async () => {

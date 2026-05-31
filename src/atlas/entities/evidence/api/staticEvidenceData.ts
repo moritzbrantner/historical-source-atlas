@@ -4,13 +4,14 @@ import type {
   EvidenceTextUnit,
 } from '../model/evidenceTypes';
 import { evidenceOverlayLayers } from '../model/evidenceTypes';
+import { staticManuscriptEvidenceReviews } from './staticManuscriptEvidenceData';
 
 const deadSeaUnitOneContent =
   'The Teacher of Righteousness gathered the community in the wilderness and taught them to seek the law.';
 const deadSeaUnitTwoContent =
   'They shall separate from the habitation of unjust men and prepare the way in the desert.';
 
-export const staticEvidenceReviews: EvidenceReview[] = [
+const textEvidenceReviews: EvidenceReview[] = [
   {
     layers: evidenceOverlayLayers,
     sourceSlug: 'dead-sea-scrolls',
@@ -94,6 +95,11 @@ export const staticEvidenceReviews: EvidenceReview[] = [
       }),
     ],
   },
+];
+
+export const staticEvidenceReviews: EvidenceReview[] = [
+  ...textEvidenceReviews,
+  ...staticManuscriptEvidenceReviews,
 ];
 
 function textUnit({

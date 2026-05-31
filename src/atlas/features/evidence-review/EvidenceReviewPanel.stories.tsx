@@ -10,6 +10,9 @@ import { EvidenceReviewPanel } from './EvidenceReviewPanel';
 const source = historicalSources.find(
   (candidate) => candidate.id === 'dead-sea-scrolls',
 )!;
+const codexSinaiticus = historicalSources.find(
+  (candidate) => candidate.id === 'codex-sinaiticus',
+)!;
 
 const emptyEvidenceRepository: EvidenceRepository = {
   async getEvidenceBySourceSlug(slug) {
@@ -102,6 +105,20 @@ export const Empty: Story = {
     const canvas = within(canvasElement);
 
     await expect(await canvas.findByText('No evidence text')).toBeVisible();
+  },
+};
+
+export const ManuscriptImageEvidence: Story = {
+  args: {
+    evidenceRepository: staticEvidenceRepository,
+    source: codexSinaiticus,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await expect(
+      await canvas.findByText('Add MS 43725, f. 1r excerpt'),
+    ).toBeVisible();
   },
 };
 

@@ -18,6 +18,7 @@ import type {
 import type { HistoricalSource } from '../../entities/source/model/sourceTypes';
 import { EmptyState } from '../../shared/ui/EmptyState';
 import { EvidenceLayerControls } from './EvidenceLayerControls';
+import { ManuscriptImageViewer } from './ManuscriptImageViewer';
 import { EvidenceOverlayDetails } from './EvidenceOverlayDetails';
 import { EvidenceTextViewer } from './EvidenceTextViewer';
 import type { EvidenceTextSegment } from './offsetSegments';
@@ -65,6 +66,14 @@ export function EvidenceReviewPanel({
       ) ?? 0,
     [evidence],
   );
+  const allOverlays = useMemo(
+    () => evidence?.units.flatMap((unit) => unit.overlays) ?? [],
+    [evidence],
+  );
+  const selectedOverlayIds = useMemo(
+    () => new Set(selectedOverlays.map((overlay) => overlay.id)),
+    [selectedOverlays],
+  );
 
   return (
     <Surface>
@@ -111,17 +120,47 @@ export function EvidenceReviewPanel({
         ) : null}
 
         {evidence?.units.length ? (
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,340px)]">
-            <EvidenceTextViewer
-              activeLayerIds={visibleLayerIds}
-              onSelectSegment={(segment: EvidenceTextSegment) => {
-                setSelectedOverlays(segment.overlays);
-                setSelectedSegmentId(segment.id);
-              }}
-              selectedSegmentId={selectedSegmentId}
-              units={evidence.units}
-            />
-            <EvidenceOverlayDetails overlays={selectedOverlays} />
+          <div
+            className={
+              evidence.imageAssets?.length
+                ? 'grid gap-4 xl:grid-cols-[minmax(320px,1fr)_minmax(360px,0.85fr)]'
+                : 'grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,340px)]'
+            }
+          >
+            {evidence.imageAssets?.length ? (
+              <ManuscriptImageViewer
+                images={evidence.imageAssets}
+                onSelectOverlay={(overlayIds) => {
+                  const nextSelectedOverlays = allOverlays.filter((overlay) =>
+                    overlayIds.includes(overlay.id),
+                  );
+                  setSelectedOverlays(nextSelectedOverlays);
+                  setSelectedSegmentId(
+                    nextSelectedOverlays[0]
+                      ? `${nextSelectedOverlays[0].startOffset}-${nextSelectedOverlays[0].endOffset}`
+                      : null,
+                  );
+                }}
+                overlays={allOverlays}
+                selectedOverlayIds={selectedOverlayIds}
+                visibleLayerIds={visibleLayerIds}
+              />
+            ) : null}
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(260px,340px)]">
+              <EvidenceTextViewer
+                activeLayerIds={visibleLayerIds}
+                onSelectSegment={(segment: EvidenceTextSegment) => {
+                  setSelectedOverlays(segment.overlays);
+                  setSelectedSegmentId(segment.id);
+                }}
+                selectedSegmentId={selectedSegmentId}
+                units={evidence.units}
+              />
+              <EvidenceOverlayDetails
+                imageAssets={evidence.imageAssets}
+                overlays={selectedOverlays}
+              />
+            </div>
           </div>
         ) : null}
       </SurfaceContent>
