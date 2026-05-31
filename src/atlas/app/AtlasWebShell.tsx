@@ -163,7 +163,17 @@ function getActiveNavbarItemId(pathname: string | null) {
   if (
     normalizedPathname === '/atlas' ||
     normalizedPathname.startsWith('/atlas/sources/') ||
-    normalizedPathname.startsWith('/atlas/collections/')
+    normalizedPathname.startsWith('/atlas/collections/') ||
+    normalizedPathname.startsWith('/atlas/persons/') ||
+    normalizedPathname.startsWith('/atlas/agents/') ||
+    normalizedPathname.startsWith('/atlas/locations/') ||
+    normalizedPathname.startsWith('/atlas/events/') ||
+    normalizedPathname.startsWith('/atlas/texts/') ||
+    normalizedPathname.startsWith('/atlas/manuscripts/') ||
+    normalizedPathname.startsWith('/atlas/inscriptions/') ||
+    normalizedPathname.startsWith('/atlas/objects/') ||
+    normalizedPathname.startsWith('/atlas/assets/') ||
+    normalizedPathname.startsWith('/atlas/entities/')
   ) {
     return 'atlas';
   }

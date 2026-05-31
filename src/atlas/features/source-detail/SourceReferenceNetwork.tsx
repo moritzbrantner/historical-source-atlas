@@ -4,7 +4,10 @@ import {
   SurfaceHeader,
   SurfaceTitle,
 } from '@moritzbrantner/ui';
+import Link from 'next/link';
 
+import { getEntityPath } from '../../app/entityRouting';
+import type { EntityType } from '../../domain/dataModel';
 import { sourceKindColors } from '../../entities/source/model/sourceConstants';
 import type { HistoricalSource } from '../../entities/source/model/sourceTypes';
 
@@ -73,7 +76,20 @@ function ReferenceColumn({
             >
               {item.relation}
             </span>
-            <strong className="text-sm text-slate-900">{item.label}</strong>
+            {item.targetEntitySlug && item.targetEntityType ? (
+              <Link
+                className="text-sm font-bold text-slate-900 no-underline hover:text-teal-700"
+                href={getEntityPath({
+                  agentKind: item.targetEntityAgentKind,
+                  slug: item.targetEntitySlug,
+                  type: item.targetEntityType as EntityType,
+                })}
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <strong className="text-sm text-slate-900">{item.label}</strong>
+            )}
             <p className="text-sm leading-5 text-slate-600">{item.note}</p>
           </li>
         ))}

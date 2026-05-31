@@ -39,6 +39,7 @@ type EntityMentionRow = {
   end_offset: number | null;
   entity_id: string;
   entity_label: string;
+  entity_slug: string;
   entity_type: string;
   id: string;
   mention_text: string;
@@ -163,6 +164,7 @@ async function readEvidenceUnits(catalogRecordId: string) {
       startOffset: row.start_offset,
       targetEntityId: row.entity_id,
       targetEntityLabel: row.entity_label,
+      targetEntitySlug: row.entity_slug,
       targetEntityType: row.entity_type,
       unitContent: unit.content,
       unitId: row.text_unit_id,
@@ -219,6 +221,7 @@ async function readEntityMentions(unitIds: string[]) {
         em.text_unit_id::text,
         em.entity_id::text,
         e.preferred_label as entity_label,
+        e.slug as entity_slug,
         e.type::text as entity_type,
         em.mention_text,
         em.start_offset,
@@ -247,6 +250,7 @@ function createOverlay({
   startOffset,
   targetEntityId,
   targetEntityLabel,
+  targetEntitySlug,
   targetEntityType,
   unitContent,
   unitId,
@@ -261,6 +265,7 @@ function createOverlay({
   startOffset: number | null;
   targetEntityId?: string | null;
   targetEntityLabel?: string | null;
+  targetEntitySlug?: string | null;
   targetEntityType?: string | null;
   unitContent: string;
   unitId: string;
@@ -287,6 +292,7 @@ function createOverlay({
     startOffset,
     targetEntityId,
     targetEntityLabel,
+    targetEntitySlug,
     targetEntityType,
     unitId,
   };

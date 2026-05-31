@@ -1,5 +1,8 @@
 import { Badge } from '@moritzbrantner/ui';
+import Link from 'next/link';
 
+import { getEntityPath } from '../../app/entityRouting';
+import type { EntityType } from '../../domain/dataModel';
 import type { EvidenceOverlay } from '../../entities/evidence/model/evidenceTypes';
 
 export function EvidenceOverlayDetails({
@@ -39,7 +42,23 @@ export function EvidenceOverlayDetails({
           {overlay.targetEntityLabel ? (
             <p className="m-0 text-xs font-semibold uppercase text-slate-500">
               {overlay.targetEntityType ?? 'entity'}:{' '}
-              {overlay.targetEntityLabel}
+              {overlay.targetEntitySlug && overlay.targetEntityType ? (
+                <Link
+                  className="text-slate-700 no-underline hover:text-teal-700"
+                  href={getEntityPath({
+                    agentKind:
+                      overlay.targetEntityType === 'agent'
+                        ? 'person'
+                        : undefined,
+                    slug: overlay.targetEntitySlug,
+                    type: overlay.targetEntityType as EntityType,
+                  })}
+                >
+                  {overlay.targetEntityLabel}
+                </Link>
+              ) : (
+                overlay.targetEntityLabel
+              )}
             </p>
           ) : null}
           {overlay.certainty ? (

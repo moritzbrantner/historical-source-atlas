@@ -29,6 +29,7 @@ export type EvidenceOverlay = {
   certainty: string | null;
   targetEntityId?: string | null;
   targetEntityLabel?: string | null;
+  targetEntitySlug?: string | null;
   targetEntityType?: string | null;
 };
 

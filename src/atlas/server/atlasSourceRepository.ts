@@ -25,6 +25,9 @@ type AtlasSourceRow = {
 
 type RelationRow = {
   note: string | null;
+  object_agent_kind?: string | null;
+  object_entity_slug?: string | null;
+  object_entity_type?: string | null;
   object_label: string | null;
   predicate: string;
   slug: string;
@@ -75,6 +78,9 @@ export function splitRelationRow(row: RelationRow) {
     label: objectLabel,
     note: row.note ?? '',
     relation,
+    targetEntityAgentKind: row.object_agent_kind,
+    targetEntitySlug: row.object_entity_slug,
+    targetEntityType: row.object_entity_type,
   };
 
   return {
@@ -123,10 +129,15 @@ async function readRelationships(slugs: string[]) {
       select
         e.slug,
         er.predicate,
+        target.slug as object_entity_slug,
+        target.type::text as object_entity_type,
+        target_agent.agent_type as object_agent_kind,
         er.object_label,
         er.note
       from entity_relations er
       join entities e on e.id = er.subject_entity_id
+      left join entities target on target.id = er.object_entity_id
+      left join agents target_agent on target_agent.entity_id = target.id
       where e.slug = any($1::text[])
       order by er.id::text
     `,

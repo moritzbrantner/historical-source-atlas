@@ -10,6 +10,9 @@ export type SourceRelationship = {
   label: string;
   note: string;
   relation: string;
+  targetEntityAgentKind?: string | null;
+  targetEntitySlug?: string | null;
+  targetEntityType?: string | null;
 };
 
 export type HistoricalSourceProperties = {

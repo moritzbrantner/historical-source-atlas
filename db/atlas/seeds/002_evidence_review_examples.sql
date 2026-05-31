@@ -230,6 +230,21 @@ begin
     'A sectarian leader named in several Qumran texts.'
   );
 
+  insert into entity_relations (
+    subject_entity_id,
+    predicate,
+    object_entity_id,
+    certainty,
+    note
+  )
+  values (
+    teacher_entity_id,
+    'mentioned in',
+    text_work_entity_id,
+    'illustrative fixture',
+    'Named in representative Community Rule evidence text.'
+  );
+
   search_text := 'community in the wilderness';
   start_offset := position(search_text in unit_one_content) - 1;
   insert into text_annotations (

@@ -76,10 +76,11 @@ Initial API endpoints should return these shapes:
 - `GET /api/atlas/sources` returns `AtlasSourceCard[]`.
 - `GET /api/atlas/sources/:slug` returns one `AtlasSourceCard` plus detail data.
 - `GET /api/atlas/sources/:slug/entities` returns `SourceEntityContext`.
-- `GET /api/entities?query=&type=&kind=` returns `EntitySummary[]`.
-- `GET /api/entities/:id` returns `AgentEntity | PlaceEntity | EventEntity | Entity`.
-- `GET /api/entities/:id/assets` returns `Asset[]`.
-- `GET /api/entities/:id/relations` returns `EntityRelation[]`.
+- `GET /api/atlas/entities?query=&type=&kind=` returns `EntitySummary[]`.
+- `GET /api/atlas/entities/:slug` returns `AtlasEntityDetail`.
+- `GET /api/atlas/entities/:slug/sources` returns linked `AtlasSourceCard[]`.
+- `GET /api/atlas/entities/:slug/mentions` returns `EntityMentionContext[]`.
+- `GET /api/atlas/entities/:slug/relations` returns incoming and outgoing `EntityRelationView[]`.
 - `GET /api/text-editions/:id/units` returns `TextUnit[]`.
 - `GET /api/text-units/:id/entity-mentions` returns `EntityMention[]`.
 

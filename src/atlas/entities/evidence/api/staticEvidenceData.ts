@@ -29,6 +29,7 @@ export const staticEvidenceReviews: EvidenceReview[] = [
             layerId: 'entities',
             targetEntityId: 'teacher-of-righteousness',
             targetEntityLabel: 'Teacher of Righteousness',
+            targetEntitySlug: 'teacher-of-righteousness',
             targetEntityType: 'agent',
             unitContent: deadSeaUnitOneContent,
             unitId: 'dead-sea-scrolls-unit-1',
@@ -132,6 +133,7 @@ function overlay({
   layerId,
   targetEntityId,
   targetEntityLabel,
+  targetEntitySlug,
   targetEntityType,
   unitContent,
   unitId,
@@ -158,6 +160,7 @@ function overlay({
     startOffset,
     targetEntityId,
     targetEntityLabel,
+    targetEntitySlug,
     targetEntityType,
     unitId,
   };
