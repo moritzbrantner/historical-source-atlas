@@ -10,6 +10,7 @@ import {
 import { NewsletterSignup } from '@/components/newsletter/newsletter-signup';
 import type { AppLocale as RoutingLocale } from '@/i18n/routing';
 import { createTranslator } from '@/src/i18n/messages';
+import { isGithubPagesBuild } from '@/src/runtime/build-target';
 
 const sectionKeys = ['websockets', 'crdts'] as const;
 
@@ -38,21 +39,23 @@ export default async function CommunicationPage({
         </CardContent>
       </Card>
 
-      <NewsletterSignup
-        locale={routingLocale}
-        labels={{
-          eyebrow: t('newsletter.eyebrow'),
-          title: t('newsletter.title'),
-          description: t('newsletter.description'),
-          email: t('newsletter.email'),
-          submit: t('newsletter.submit'),
-          submitting: t('newsletter.submitting'),
-          requiredEmail: t('newsletter.requiredEmail'),
-          invalidEmail: t('newsletter.invalidEmail'),
-          success: t('newsletter.success'),
-          genericError: t('newsletter.genericError'),
-        }}
-      />
+      {isGithubPagesBuild ? null : (
+        <NewsletterSignup
+          locale={routingLocale}
+          labels={{
+            eyebrow: t('newsletter.eyebrow'),
+            title: t('newsletter.title'),
+            description: t('newsletter.description'),
+            email: t('newsletter.email'),
+            submit: t('newsletter.submit'),
+            submitting: t('newsletter.submitting'),
+            requiredEmail: t('newsletter.requiredEmail'),
+            invalidEmail: t('newsletter.invalidEmail'),
+            success: t('newsletter.success'),
+            genericError: t('newsletter.genericError'),
+          }}
+        />
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         {sectionKeys.map((key) => (

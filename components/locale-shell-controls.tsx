@@ -82,6 +82,7 @@ type LocaleShellControlsProps = {
     searchPlaceholder: string;
     empty: string;
   };
+  authLinksEnabled?: boolean;
 };
 
 function getSystemTheme(): Theme {
@@ -160,6 +161,7 @@ export function LocaleShellControls({
   themeLabels,
   hotkeyItems,
   hotkeyLabels,
+  authLinksEnabled = true,
 }: LocaleShellControlsProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -331,7 +333,7 @@ export function LocaleShellControls({
             ]}
           />
         </>
-      ) : (
+      ) : authLinksEnabled ? (
         <>
           <Button asChild variant="ghost" size="sm">
             <a href={`/${locale}/login`}>{authLabels.login}</a>
@@ -340,7 +342,7 @@ export function LocaleShellControls({
             <a href={`/${locale}/register`}>{authLabels.register}</a>
           </Button>
         </>
-      )}
+      ) : null}
       <NavigationHotkeysTrigger items={hotkeyItems} labels={hotkeyLabels} />
       <LanguageSwitcher
         aria-label={languageLabels.label}

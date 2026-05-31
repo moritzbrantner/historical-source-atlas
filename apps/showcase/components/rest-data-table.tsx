@@ -21,10 +21,21 @@ export type RestDataColumn<T extends RowData> = {
   valueType?: ValueType;
 };
 
-type RestDataTableProps<T extends RowData> = {
-  endpoint: string;
+type RestDataTableBaseProps<T extends RowData> = {
   columns: Array<RestDataColumn<T>>;
 };
+
+type RestDataTableProps<T extends RowData> = RestDataTableBaseProps<T> & {
+  endpoint: string;
+};
+
+type StaticDataTableProps<T extends RowData> = RestDataTableBaseProps<T> & {
+  initialRows: T[];
+};
+
+export type RestOrStaticDataTableProps<T extends RowData> =
+  | RestDataTableProps<T>
+  | StaticDataTableProps<T>;
 
 type SortDirection = 'asc' | 'desc';
 
@@ -92,23 +103,36 @@ function compareValues(
 }
 
 export function RestDataTable<T extends RowData>({
-  endpoint,
   columns,
-}: RestDataTableProps<T>) {
-  const [rows, setRows] = useState<T[]>([]);
+  ...dataSource
+}: RestOrStaticDataTableProps<T>) {
+  const endpoint = 'endpoint' in dataSource ? dataSource.endpoint : null;
+  const initialRows =
+    'initialRows' in dataSource ? dataSource.initialRows : null;
+  const [rows, setRows] = useState<T[]>(initialRows ?? []);
   const [status, setStatus] = useState<'loading' | 'error' | 'ready'>(
-    'loading',
+    initialRows ? 'ready' : 'loading',
   );
   const [sortConfig, setSortConfig] = useState<SortConfig<T> | null>(null);
   const [filters, setFilters] = useState<Partial<Record<keyof T, string>>>({});
 
   useEffect(() => {
+    const requestEndpoint = endpoint;
+
+    if (!requestEndpoint) {
+      setRows(initialRows ?? []);
+      setStatus('ready');
+      return;
+    }
+
     const controller = new AbortController();
 
-    async function loadRows() {
+    async function loadRows(requestEndpoint: string) {
       try {
         setStatus('loading');
-        const response = await fetch(endpoint, { signal: controller.signal });
+        const response = await fetch(requestEndpoint, {
+          signal: controller.signal,
+        });
 
         if (!response.ok) {
           throw new Error(`Request failed with status ${response.status}`);
@@ -124,10 +148,10 @@ export function RestDataTable<T extends RowData>({
       }
     }
 
-    void loadRows();
+    void loadRows(requestEndpoint);
 
     return () => controller.abort();
-  }, [endpoint]);
+  }, [endpoint, initialRows]);
 
   const visibleRows = useMemo(() => {
     const filteredRows = rows.filter((row) =>

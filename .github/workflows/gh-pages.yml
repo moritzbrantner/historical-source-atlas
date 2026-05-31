@@ -62,6 +62,9 @@ jobs:
           test -f .generated/unlighthouse/ci-result.json
           test -f out/en/unlighthouse/index.html
           test -f out/de/unlighthouse/index.html
+          test -f out/en/atlas/index.html
+          test -f out/de/atlas/index.html
+          test -f out/en/atlas/sources/dead-sea-scrolls/index.html
 
       - name: Prepare GitHub Pages artifact
         working-directory: historical-source-atlas

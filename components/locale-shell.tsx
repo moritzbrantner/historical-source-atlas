@@ -21,6 +21,7 @@ import {
 import { buildNavigationCategories } from '@/src/navigation/navigation-categories';
 import { buildNavigationSearchText } from '@/src/navigation/search-index';
 import { buildPublicProfilePath } from '@/src/profile/tags';
+import { isGithubPagesBuild } from '@/src/runtime/build-target';
 import { loadAppContext } from '@/src/runtime.functions';
 
 type LocaleShellProps = {
@@ -133,12 +134,13 @@ export async function LocaleShell({
     searchPlaceholder: t('hotkeys.searchPlaceholder'),
     empty: t('hotkeys.empty'),
   };
-  const hotkeyItems = getVisibleAppPages({
+  const visibleHotkeyPages = getVisibleAppPages({
     isAuthenticated: Boolean(resolvedSession?.user?.id),
     role: resolvedSession?.user?.role,
     permissionSet,
     featureStateByKey,
-  }).map((page) => {
+  }).filter((page) => !isGithubPagesBuild || page.visibility === 'public');
+  const hotkeyItems = visibleHotkeyPages.map((page) => {
     const label = getSearchLabel(t, page.translationKey, page.key);
     const groupLabel = getHotkeyGroupLabel(
       page.navigationCategory,
@@ -199,6 +201,7 @@ export async function LocaleShell({
       }}
       hotkeyItems={hotkeyItems}
       hotkeyLabels={hotkeyLabels}
+      authLinksEnabled={!isGithubPagesBuild}
     />
   );
 

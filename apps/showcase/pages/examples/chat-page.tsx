@@ -3,6 +3,7 @@ import type { AppLocale } from '@moritzbrantner/app-pack';
 import { ChatRoom } from '@/apps/showcase/components/chat-room';
 import { getEnv } from '@/src/config/env';
 import { createTranslator } from '@/src/i18n/messages';
+import { isGithubPagesBuild } from '@/src/runtime/build-target';
 
 export default async function ChatPage({ locale }: { locale: AppLocale }) {
   const t = createTranslator(locale, 'ChatPage');
@@ -11,7 +12,7 @@ export default async function ChatPage({ locale }: { locale: AppLocale }) {
   return (
     <ChatRoom
       locale={locale}
-      tenorEnabled={env.tenor.configured}
+      tenorEnabled={!isGithubPagesBuild && env.tenor.configured}
       labels={{
         title: t('title'),
         status: t('status'),

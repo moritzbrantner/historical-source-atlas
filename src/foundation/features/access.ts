@@ -8,6 +8,10 @@ import type { AppManifest } from '@/src/app-config/contracts';
 import { getDb } from '@/src/db/client';
 import { siteSettings, userFeatureOverrides } from '@/src/db/schema';
 import {
+  getStaticDeployFeatureOverrides,
+  isStaticDeployFeatureOverrideActive,
+} from '@/src/runtime/static-deploy-features';
+import {
   shouldUseDatabaseReadFallback,
   upsertSiteSetting,
 } from '@/src/site-config/service';
@@ -313,7 +317,12 @@ export async function isSiteFeatureEnabled(
   featureKey: FoundationFeatureKey,
   manifest: AppManifest = loadActiveApp(),
 ) {
-  const siteWideOverrides = await getSiteWideFeatureOverrideMap();
+  const siteWideOverrides = isStaticDeployFeatureOverrideActive()
+    ? getStaticDeployFeatureOverrides()
+    : {
+        ...(await getSiteWideFeatureOverrideMap()),
+        ...getStaticDeployFeatureOverrides(),
+      };
 
   return resolveFeatureEnabledState({
     featureKey,
@@ -327,13 +336,23 @@ export async function isFeatureEnabledForUser(
   user: FeatureRuntimeUser | null | undefined,
   manifest: AppManifest = loadActiveApp(),
 ) {
-  const [siteWideOverrides, roleOverrides, userOverrides] = await Promise.all([
-    getSiteWideFeatureOverrideMap(),
-    getRoleFeatureOverrideMap(),
-    user?.id
-      ? getUserFeatureOverrideMap(user.id)
-      : Promise.resolve({} as FoundationFeatureOverrideMap),
-  ]);
+  const [siteWideOverrides, roleOverrides, userOverrides] =
+    isStaticDeployFeatureOverrideActive()
+      ? [
+          getStaticDeployFeatureOverrides(),
+          {} as FoundationRoleFeatureOverrideMap,
+          {} as FoundationFeatureOverrideMap,
+        ]
+      : await Promise.all([
+          getSiteWideFeatureOverrideMap().then((overrides) => ({
+            ...overrides,
+            ...getStaticDeployFeatureOverrides(),
+          })),
+          getRoleFeatureOverrideMap(),
+          user?.id
+            ? getUserFeatureOverrideMap(user.id)
+            : Promise.resolve({} as FoundationFeatureOverrideMap),
+        ]);
 
   return resolveFeatureEnabledState({
     featureKey,
@@ -351,13 +370,23 @@ export async function getFoundationFeatureAvailabilityMap(
   user: FeatureRuntimeUser | null | undefined,
   manifest: AppManifest = loadActiveApp(),
 ) {
-  const [siteWideOverrides, roleOverrides, userOverrides] = await Promise.all([
-    getSiteWideFeatureOverrideMap(),
-    getRoleFeatureOverrideMap(),
-    user?.id
-      ? getUserFeatureOverrideMap(user.id)
-      : Promise.resolve({} as FoundationFeatureOverrideMap),
-  ]);
+  const [siteWideOverrides, roleOverrides, userOverrides] =
+    isStaticDeployFeatureOverrideActive()
+      ? [
+          getStaticDeployFeatureOverrides(),
+          {} as FoundationRoleFeatureOverrideMap,
+          {} as FoundationFeatureOverrideMap,
+        ]
+      : await Promise.all([
+          getSiteWideFeatureOverrideMap().then((overrides) => ({
+            ...overrides,
+            ...getStaticDeployFeatureOverrides(),
+          })),
+          getRoleFeatureOverrideMap(),
+          user?.id
+            ? getUserFeatureOverrideMap(user.id)
+            : Promise.resolve({} as FoundationFeatureOverrideMap),
+        ]);
 
   return Object.fromEntries(
     foundationFeatureKeys.map((featureKey) => [
