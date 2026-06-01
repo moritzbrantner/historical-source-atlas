@@ -1,5 +1,8 @@
 'use client';
 
+import { GitCompareArrows, Network } from 'lucide-react';
+import type { ReactNode } from 'react';
+
 import {
   Badge,
   Button,
@@ -26,18 +29,20 @@ import { MetricStats } from '../../shared/ui/MetricStats';
 import { EmptyState } from '../../shared/ui/EmptyState';
 import { EvidenceReviewPanel } from '../evidence-review/EvidenceReviewPanel';
 import { RelatedSources } from './RelatedSources';
-import { SourceComparison } from './SourceComparison';
 import { SourceFacts } from './SourceFacts';
 import { SourceLocationMap } from './SourceLocationMap';
-import { SourceReferenceNetwork } from './SourceReferenceNetwork';
 
 export function SourcePage({
   onBackToAtlas,
+  onOpenComparison,
+  onOpenReferenceNetwork,
   onOpenSource,
   sourceRepository,
   sourceId,
 }: {
   onBackToAtlas: () => void;
+  onOpenComparison: () => void;
+  onOpenReferenceNetwork: () => void;
   onOpenSource: (sourceId: string) => void;
   sourceRepository?: SourceRepository;
   sourceId: string;
@@ -130,12 +135,10 @@ export function SourcePage({
               </SurfaceContent>
             </Surface>
 
-            <EvidenceReviewPanel source={source} />
-            <SourceReferenceNetwork source={source} />
-            <SourceComparison
+            <SourceToolLinks
               source={source}
-              sources={sources}
-              onOpenSource={onOpenSource}
+              onOpenComparison={onOpenComparison}
+              onOpenReferenceNetwork={onOpenReferenceNetwork}
             />
           </article>
 
@@ -151,8 +154,70 @@ export function SourcePage({
             />
           </aside>
         </section>
+
+        <EvidenceReviewPanel source={source} />
       </PageContent>
     </PageShell>
+  );
+}
+
+function SourceToolLinks({
+  onOpenComparison,
+  onOpenReferenceNetwork,
+  source,
+}: {
+  onOpenComparison: () => void;
+  onOpenReferenceNetwork: () => void;
+  source: HistoricalSource;
+}) {
+  return (
+    <Surface>
+      <SurfaceHeader>
+        <SurfaceTitle>Research Tools</SurfaceTitle>
+      </SurfaceHeader>
+      <SurfaceContent>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <SourceToolLink
+            icon={<Network aria-hidden="true" size={18} />}
+            label="Reference Network"
+            metric={`${source.properties.referencedIn.length} incoming · ${source.properties.references.length} outgoing`}
+            onOpen={onOpenReferenceNetwork}
+          />
+          <SourceToolLink
+            icon={<GitCompareArrows aria-hidden="true" size={18} />}
+            label="Compare Sources"
+            metric={`${sourceKindLabels[source.properties.kind]} · ${source.properties.region}`}
+            onOpen={onOpenComparison}
+          />
+        </div>
+      </SurfaceContent>
+    </Surface>
+  );
+}
+
+function SourceToolLink({
+  icon,
+  label,
+  metric,
+  onOpen,
+}: {
+  icon: ReactNode;
+  label: string;
+  metric: string;
+  onOpen: () => void;
+}) {
+  return (
+    <button
+      className="grid gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 text-left text-slate-900 transition hover:border-teal-300 hover:bg-teal-50/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700"
+      onClick={onOpen}
+      type="button"
+    >
+      <span className="flex items-center gap-2 text-sm font-bold">
+        {icon}
+        {label}
+      </span>
+      <span className="text-sm font-medium text-slate-600">{metric}</span>
+    </button>
   );
 }
 

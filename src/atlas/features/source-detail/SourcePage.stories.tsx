@@ -15,6 +15,8 @@ const notFoundSourceRepository: SourceRepository = {
 const meta = {
   args: {
     onBackToAtlas: () => undefined,
+    onOpenComparison: () => undefined,
+    onOpenReferenceNetwork: () => undefined,
     onOpenSource: () => undefined,
     sourceId: 'dead-sea-scrolls',
     sourceRepository: staticSourceRepository,

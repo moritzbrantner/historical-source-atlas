@@ -41,6 +41,7 @@ export function EvidenceReviewPanel({
   const [selectedSegmentId, setSelectedSegmentId] = useState<string | null>(
     null,
   );
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!evidence) {
@@ -56,6 +57,7 @@ export function EvidenceReviewPanel({
     );
     setSelectedOverlays([]);
     setSelectedSegmentId(null);
+    setSelectedImageId(evidence.imageAssets?.[0]?.id ?? null);
   }, [evidence]);
 
   const overlayCount = useMemo(
@@ -74,6 +76,23 @@ export function EvidenceReviewPanel({
     () => new Set(selectedOverlays.map((overlay) => overlay.id)),
     [selectedOverlays],
   );
+  const activeSelectedImageId =
+    selectedImageId ?? evidence?.imageAssets?.[0]?.id ?? null;
+  const evidenceUnitsForSelectedImage = useMemo(() => {
+    if (!evidence || !evidence.imageAssets?.length || !activeSelectedImageId) {
+      return evidence?.units ?? [];
+    }
+
+    const unitsOnSelectedImage = evidence.units.filter((unit) =>
+      unit.overlays.some((overlay) =>
+        overlay.imageRegions?.some(
+          (region) => region.imageAssetId === activeSelectedImageId,
+        ),
+      ),
+    );
+
+    return unitsOnSelectedImage.length ? unitsOnSelectedImage : evidence.units;
+  }, [activeSelectedImageId, evidence]);
 
   return (
     <Surface>
@@ -141,7 +160,13 @@ export function EvidenceReviewPanel({
                       : null,
                   );
                 }}
+                onSelectImage={(imageId) => {
+                  setSelectedImageId(imageId);
+                  setSelectedOverlays([]);
+                  setSelectedSegmentId(null);
+                }}
                 overlays={allOverlays}
+                selectedImageId={activeSelectedImageId}
                 selectedOverlayIds={selectedOverlayIds}
                 visibleLayerIds={visibleLayerIds}
               />
@@ -154,7 +179,7 @@ export function EvidenceReviewPanel({
                   setSelectedSegmentId(segment.id);
                 }}
                 selectedSegmentId={selectedSegmentId}
-                units={evidence.units}
+                units={evidenceUnitsForSelectedImage}
               />
               <EvidenceOverlayDetails
                 imageAssets={evidence.imageAssets}

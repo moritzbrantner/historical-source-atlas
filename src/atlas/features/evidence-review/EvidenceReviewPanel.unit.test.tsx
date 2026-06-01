@@ -79,8 +79,31 @@ describe('EvidenceReviewPanel', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('Add MS 43725, f. 1r excerpt')).toBeInTheDocument();
     expect(
+      screen.queryByText('Add MS 43725, f. 1v excerpt'),
+    ).not.toBeInTheDocument();
+    expect(
       screen.getByRole('button', {
         name: /First column line group image region on f\. 1r/,
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it('pages manuscript image evidence with the selected canvas', async () => {
+    const user = userEvent.setup();
+    renderEvidencePanel(codexSinaiticus, staticEvidenceRepository);
+
+    await screen.findByText('Add MS 43725, f. 1r excerpt');
+    await user.click(
+      screen.getByRole('button', { name: 'Next manuscript page' }),
+    );
+
+    expect(screen.getByText('Add MS 43725, f. 1v excerpt')).toBeInTheDocument();
+    expect(
+      screen.queryByText('Add MS 43725, f. 1r excerpt'),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', {
+        name: /εν τη ερημω image region on f\. 1v/,
       }),
     ).toBeInTheDocument();
   });

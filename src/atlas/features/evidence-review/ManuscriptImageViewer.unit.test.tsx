@@ -92,15 +92,47 @@ describe('ManuscriptImageViewer', () => {
       screen.getByRole('link', { name: 'Open source IIIF image' }),
     ).toHaveAttribute('href', 'https://example.test/image.jpg');
   });
+
+  it('pages between manuscript images', async () => {
+    const user = userEvent.setup();
+    const onSelectImage = vi.fn();
+
+    render(
+      <ManuscriptImageViewer
+        images={[
+          imageAsset({ id: 'image-1', label: 'f. 1r' }),
+          imageAsset({ id: 'image-2', label: 'f. 1v' }),
+        ]}
+        onSelectImage={onSelectImage}
+        onSelectOverlay={() => {}}
+        overlays={[overlay()]}
+        selectedImageId="image-1"
+        selectedOverlayIds={new Set()}
+        visibleLayerIds={new Set(['important'])}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole('button', { name: 'Next manuscript page' }),
+    );
+
+    expect(onSelectImage).toHaveBeenCalledWith('image-2');
+  });
 });
 
-function imageAsset(): EvidenceImageAsset {
+function imageAsset({
+  id = 'image-1',
+  label = 'f. 1r',
+}: {
+  id?: string;
+  label?: string;
+} = {}): EvidenceImageAsset {
   return {
     attribution: 'The British Library',
     canvasId: 'canvas-1',
     height: 800,
-    id: 'image-1',
-    label: 'f. 1r',
+    id,
+    label,
     localImageUrl: '/atlas-manuscripts/codex-sinaiticus/f-1r.jpg',
     manifestId: 'https://example.test/manifest',
     provider: 'The British Library',

@@ -1,7 +1,14 @@
 'use client';
 
 import { Badge, Button } from '@moritzbrantner/ui';
-import { ImageOff, Maximize2, ZoomIn, ZoomOut } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ImageOff,
+  Maximize2,
+  ZoomIn,
+  ZoomOut,
+} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 import type {
@@ -25,27 +32,42 @@ const regionColorClassNames: Record<EvidenceLayerId, string> = {
 export function ManuscriptImageViewer({
   images,
   onSelectOverlay,
+  onSelectImage,
   overlays,
+  selectedImageId: controlledSelectedImageId,
   selectedOverlayIds,
   visibleLayerIds,
 }: {
   images: EvidenceImageAsset[];
   overlays: EvidenceOverlay[];
+  selectedImageId?: string | null;
   selectedOverlayIds: Set<string>;
   visibleLayerIds: Set<EvidenceLayerId>;
+  onSelectImage?: (imageId: string) => void;
   onSelectOverlay: (overlayIds: string[]) => void;
 }) {
-  const [selectedImageId, setSelectedImageId] = useState(images[0]?.id ?? '');
+  const [internalSelectedImageId, setInternalSelectedImageId] = useState(
+    images[0]?.id ?? '',
+  );
   const [zoom, setZoom] = useState(1);
   const [failedImageIds, setFailedImageIds] = useState<Set<string>>(
     () => new Set(),
   );
+  const selectedImageId = controlledSelectedImageId ?? internalSelectedImageId;
+
+  function selectImage(imageId: string) {
+    setInternalSelectedImageId(imageId);
+    onSelectImage?.(imageId);
+  }
 
   useEffect(() => {
     if (!images.some((image) => image.id === selectedImageId)) {
-      setSelectedImageId(images[0]?.id ?? '');
+      const nextImageId = images[0]?.id ?? '';
+
+      setInternalSelectedImageId(nextImageId);
+      onSelectImage?.(nextImageId);
     }
-  }, [images, selectedImageId]);
+  }, [images, onSelectImage, selectedImageId]);
 
   const selectedImage = useMemo(
     () =>
@@ -71,6 +93,10 @@ export function ManuscriptImageViewer({
   }
 
   const imageFailed = failedImageIds.has(selectedImage.id);
+  const selectedImageIndex = images.findIndex(
+    (image) => image.id === selectedImage.id,
+  );
+  const pageNumber = Math.max(selectedImageIndex, 0) + 1;
 
   return (
     <section
@@ -124,25 +150,66 @@ export function ManuscriptImageViewer({
 
       {images.length > 1 ? (
         <div
-          aria-label="Manuscript pages"
-          className="flex flex-wrap gap-2"
+          aria-label="Manuscript pagination"
+          className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 p-2"
           role="group"
         >
-          {images.map((image) => (
+          <div className="flex items-center gap-2">
             <Button
-              aria-pressed={image.id === selectedImage.id}
-              key={image.id}
+              aria-label="Previous manuscript page"
+              disabled={selectedImageIndex <= 0}
               onClick={() => {
-                setSelectedImageId(image.id);
+                const previousImage = images[selectedImageIndex - 1];
+                if (!previousImage) {
+                  return;
+                }
+
+                selectImage(previousImage.id);
                 setZoom(1);
               }}
               size="sm"
               type="button"
-              variant={image.id === selectedImage.id ? 'secondary' : 'outline'}
+              variant="outline"
             >
-              {image.label}
+              <ChevronLeft aria-hidden="true" size={16} />
             </Button>
-          ))}
+            <span className="min-w-24 text-center text-sm font-semibold text-slate-700">
+              Page {pageNumber} of {images.length}
+            </span>
+            <Button
+              aria-label="Next manuscript page"
+              disabled={selectedImageIndex >= images.length - 1}
+              onClick={() => {
+                const nextImage = images[selectedImageIndex + 1];
+                if (!nextImage) {
+                  return;
+                }
+
+                selectImage(nextImage.id);
+                setZoom(1);
+              }}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              <ChevronRight aria-hidden="true" size={16} />
+            </Button>
+          </div>
+          <select
+            aria-label="Manuscript page"
+            className="min-h-9 rounded-md border border-slate-300 bg-white px-3 py-1 text-sm font-semibold text-slate-900 shadow-sm outline-none transition focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20"
+            value={selectedImage.id}
+            onChange={(event) => {
+              selectImage(event.target.value);
+              setZoom(1);
+            }}
+          >
+            {images.map((image, index) => (
+              <option key={image.id} value={image.id}>
+                {index + 1}. {image.label}
+              </option>
+            ))}
+          </select>
         </div>
       ) : null}
 
