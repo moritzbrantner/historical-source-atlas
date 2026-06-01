@@ -35,6 +35,27 @@ jobs:
           repository: ${{ github.repository_owner }}/maps
           token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
 
+      - name: Checkout sibling platform packages dependency
+        uses: actions/checkout@v6
+        with:
+          path: platform-packages
+          repository: ${{ github.repository_owner }}/platform-packages
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
+
+      - name: Checkout sibling Rust packages dependency
+        uses: actions/checkout@v6
+        with:
+          path: rust-packages
+          repository: ${{ github.repository_owner }}/rust-packages
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
+
+      - name: Checkout sibling timeline editor dependency
+        uses: actions/checkout@v6
+        with:
+          path: timeline-editor
+          repository: ${{ github.repository_owner }}/timeline-editor
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
+
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
         with:
@@ -63,6 +84,27 @@ jobs:
         with:
           path: maps
           repository: ${{ github.repository_owner }}/maps
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
+
+      - name: Checkout sibling platform packages dependency
+        uses: actions/checkout@v6
+        with:
+          path: platform-packages
+          repository: ${{ github.repository_owner }}/platform-packages
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
+
+      - name: Checkout sibling Rust packages dependency
+        uses: actions/checkout@v6
+        with:
+          path: rust-packages
+          repository: ${{ github.repository_owner }}/rust-packages
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
+
+      - name: Checkout sibling timeline editor dependency
+        uses: actions/checkout@v6
+        with:
+          path: timeline-editor
+          repository: ${{ github.repository_owner }}/timeline-editor
           token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
 
       - name: Set up Bun
@@ -107,6 +149,27 @@ jobs:
         with:
           path: maps
           repository: ${{ github.repository_owner }}/maps
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
+
+      - name: Checkout sibling platform packages dependency
+        uses: actions/checkout@v6
+        with:
+          path: platform-packages
+          repository: ${{ github.repository_owner }}/platform-packages
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
+
+      - name: Checkout sibling Rust packages dependency
+        uses: actions/checkout@v6
+        with:
+          path: rust-packages
+          repository: ${{ github.repository_owner }}/rust-packages
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
+
+      - name: Checkout sibling timeline editor dependency
+        uses: actions/checkout@v6
+        with:
+          path: timeline-editor
+          repository: ${{ github.repository_owner }}/timeline-editor
           token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
 
       - name: Set up Bun
@@ -155,6 +218,27 @@ jobs:
           repository: ${{ github.repository_owner }}/maps
           token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
 
+      - name: Checkout sibling platform packages dependency
+        uses: actions/checkout@v6
+        with:
+          path: platform-packages
+          repository: ${{ github.repository_owner }}/platform-packages
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
+
+      - name: Checkout sibling Rust packages dependency
+        uses: actions/checkout@v6
+        with:
+          path: rust-packages
+          repository: ${{ github.repository_owner }}/rust-packages
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
+
+      - name: Checkout sibling timeline editor dependency
+        uses: actions/checkout@v6
+        with:
+          path: timeline-editor
+          repository: ${{ github.repository_owner }}/timeline-editor
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
+
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
         with:
@@ -194,6 +278,27 @@ jobs:
         with:
           path: maps
           repository: ${{ github.repository_owner }}/maps
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
+
+      - name: Checkout sibling platform packages dependency
+        uses: actions/checkout@v6
+        with:
+          path: platform-packages
+          repository: ${{ github.repository_owner }}/platform-packages
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
+
+      - name: Checkout sibling Rust packages dependency
+        uses: actions/checkout@v6
+        with:
+          path: rust-packages
+          repository: ${{ github.repository_owner }}/rust-packages
+          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
+
+      - name: Checkout sibling timeline editor dependency
+        uses: actions/checkout@v6
+        with:
+          path: timeline-editor
+          repository: ${{ github.repository_owner }}/timeline-editor
           token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
 
       - name: Set up Bun
