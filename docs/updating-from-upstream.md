@@ -4,7 +4,7 @@ This repo no longer assumes subtree sync or upstream folder merges.
 
 ## Update order
 
-1. Adopt released runtime package updates from `platform-packages`, starting with `@moritzbrantner/ui`.
+1. Adopt released runtime package updates from npm, starting with `@moritzbrantner/ui`.
 2. Adopt pinned reusable workflow updates when the shared workflow repo publishes a newer ref.
 3. Apply structural repo migrations through `@moritzbrantner/platform-upgrader`.
 4. Re-run `bun run typecheck` and the relevant test suites after each contract change.

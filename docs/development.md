@@ -5,13 +5,11 @@
 Install Bun `1.3.14`, then install dependencies:
 
 ```bash
-./scripts/ci/install-with-sibling-maps.sh
+bun install --frozen-lockfile
 ```
 
-The install helper first installs the sibling `../maps` checkout, then installs
-this repository. That is required while the app depends on
-`@moritzbrantner/maps`, `@moritzbrantner/data-density`, and
-`@moritzbrantner/timeline-editor` through `file:../maps` paths.
+Shared runtime packages resolve from the public npm registry; no sibling
+package checkouts are required for a normal install.
 
 Create local environment files from the examples:
 
@@ -123,7 +121,7 @@ Publish only from the package directory and do not commit built `dist/` output o
 
 ## Stable Release Checklist
 
-- Fresh clone with sibling `maps` checkout installs via `./scripts/ci/install-with-sibling-maps.sh`.
+- Fresh clone installs with `bun install --frozen-lockfile`.
 - `bun run lint`, `bun run typecheck`, `bun run test`, and `bun run test:integration` pass.
 - `./scripts/ci/check-atlas-seed-idempotency.sh` passes.
 - `bun run storybook:build` and `bun run test:storybook` pass.

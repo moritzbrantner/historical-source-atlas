@@ -17,5 +17,5 @@ This audit classifies the current uncommitted work before contract alignment. No
 ## Stale contract, docs, or tests to replace
 
 - `docs/updating-from-upstream.md` because it still describes a subtree merge model that is out of contract for `scaffold-v2`.
-- Any contract docs that imply `packages/ui` remains the long-term runtime source of truth after the platform-packages migration.
+- Any contract docs that imply `packages/ui` remains the long-term runtime source of truth instead of public npm packages.
 - Any tests that encode subtree-sync assumptions instead of package, workflow, or upgrader-based maintenance.

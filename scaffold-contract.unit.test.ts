@@ -41,18 +41,22 @@ describe('scaffold-v2 contract', () => {
       'packages/app-pack-react',
     ]);
     expect(packageJson.dependencies['@moritzbrantner/ui']).toBe('^0.8.0');
+    expect(packageJson.dependencies['@moritzbrantner/maps']).toBe('^0.1.4');
     expect(
       packageJson.dependencies['@moritzbrantner/storytelling'],
     ).toBeUndefined();
     const fileDependencies = Object.entries(packageJson.dependencies)
       .filter(([, version]) => version.startsWith('file:'))
       .map(([name]) => name);
-    expect(fileDependencies).toEqual([
-      '@moritzbrantner/data-density',
-      '@moritzbrantner/maps',
-      '@moritzbrantner/timeline-editor',
-    ]);
+    expect(fileDependencies).toEqual([]);
+    expect(
+      packageJson.dependencies['@moritzbrantner/data-density'],
+    ).toBeUndefined();
+    expect(
+      packageJson.dependencies['@moritzbrantner/timeline-editor'],
+    ).toBeUndefined();
     expect(packageJson.overrides?.['@moritzbrantner/ui']).toBeUndefined();
+    expect(packageJson.overrides).toBeUndefined();
     expect(existsSync(path.join(process.cwd(), '.npmrc'))).toBe(false);
   });
 

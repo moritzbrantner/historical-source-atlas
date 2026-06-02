@@ -67,9 +67,7 @@
     "@mdx-js/mdx": "^3.1.1",
     "@moritzbrantner/app-pack": "workspace:*",
     "@moritzbrantner/app-pack-react": "workspace:*",
-    "@moritzbrantner/data-density": "file:../platform-packages/packages/data-density",
-    "@moritzbrantner/maps": "file:../maps",
-    "@moritzbrantner/timeline-editor": "file:../timeline-editor",
+    "@moritzbrantner/maps": "^0.1.4",
     "@moritzbrantner/ui": "^0.8.0",
     "@next/mdx": "^16.2.6",
     "@react-email/components": "1.0.12",
@@ -130,11 +128,6 @@
     "typescript": "^6.0.3",
     "vite": "^8.0.13",
     "vitest": "4.1.7"
-  },
-  "overrides": {
-    "@mb-rust/dense-data-wasm": "file:../rust-packages/packages/dense-data-wasm",
-    "@moritzbrantner/data-density": "file:../platform-packages/packages/data-density",
-    "@moritzbrantner/timeline-editor": "file:../timeline-editor"
   },
   "packageManager": "bun@1.3.14"
 }

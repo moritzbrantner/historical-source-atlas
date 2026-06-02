@@ -28,14 +28,9 @@ bun install
 bun run dev
 ```
 
-This repository currently consumes `@moritzbrantner/maps` and two related
-packages through `file:../maps` dependencies. Until those packages are consumed
-from a registry, keep the `maps` repository checked out next to this repository
-and install with:
-
-```bash
-./scripts/ci/install-with-sibling-maps.sh
-```
+Shared runtime packages such as `@moritzbrantner/maps` are consumed from the
+public npm registry, so no sibling package checkouts are required for a normal
+install.
 
 `bun run dev` uses the template development flow. For long-lived local services, start compose and apply both the template and atlas database setup:
 

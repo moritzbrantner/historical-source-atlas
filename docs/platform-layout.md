@@ -15,5 +15,5 @@ This repository is a platform scaffold with one deployable Next.js app at the ro
 - `app.manifest.ts` is the standalone repo metadata contract.
 - App packs extend the platform through `AppManifest`.
 - Local workspace packages expose stable entrypoints only from `package.json#exports`.
-- Shared runtime packages come from `platform-packages`.
+- Shared runtime packages come from the public npm registry.
 - Foundation code must not import app packs directly except via manifest loading.
