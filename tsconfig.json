@@ -19,6 +19,10 @@
       }
     ],
     "paths": {
+      "@moritzbrantner/app-pack": ["./packages/app-pack/src/index.ts"],
+      "@moritzbrantner/app-pack-react": [
+        "./packages/app-pack-react/src/index.tsx"
+      ],
       "@/app/*": ["./app/*"],
       "@/apps/*": ["./apps/*"],
       "@/components/*": ["./components/*"],
