@@ -52,36 +52,11 @@ export type EvidenceTextUnit = {
 export type EvidenceReview = {
   sourceSlug: string;
   title: string;
-  layers: EvidenceOverlayLayer[];
+  layers: readonly EvidenceOverlayLayer[];
   units: EvidenceTextUnit[];
   imageAssets?: EvidenceImageAsset[];
 };
 
 export type { EvidenceImageAsset, EvidenceImageRegion };
 
-export const evidenceOverlayLayers: EvidenceOverlayLayer[] = [
-  {
-    defaultVisible: true,
-    id: 'important',
-    kind: 'highlight',
-    label: 'Important passages',
-  },
-  {
-    defaultVisible: true,
-    id: 'translation',
-    kind: 'translation',
-    label: 'Translations',
-  },
-  {
-    defaultVisible: true,
-    id: 'entities',
-    kind: 'entity',
-    label: 'Entities',
-  },
-  {
-    defaultVisible: false,
-    id: 'notes',
-    kind: 'note',
-    label: 'Notes',
-  },
-];
+export { atlasEvidenceLayerEntries as evidenceOverlayLayers } from '../../../domain/atlasTaxonomy';

@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import { getEntityPath } from '../../app/entityRouting';
 import type { EntityType } from '../../domain/dataModel';
+import { getEntityDisplayCategory } from '../../domain/atlasTaxonomy';
 import type {
   EvidenceImageAsset,
   EvidenceOverlay,
@@ -48,15 +49,14 @@ export function EvidenceOverlayDetails({
           ) : null}
           {overlay.targetEntityLabel ? (
             <p className="m-0 text-xs font-semibold uppercase text-slate-500">
-              {overlay.targetEntityType ?? 'entity'}:{' '}
+              {getOverlayEntityDisplayCategory(overlay.targetEntityType)}:{' '}
               {overlay.targetEntitySlug && overlay.targetEntityType ? (
                 <Link
                   className="text-slate-700 no-underline hover:text-teal-700"
                   href={getEntityPath({
-                    agentKind:
-                      overlay.targetEntityType === 'agent'
-                        ? 'person'
-                        : undefined,
+                    agentKind: getOverlayEntityAgentKind(
+                      overlay.targetEntityType,
+                    ),
                     slug: overlay.targetEntitySlug,
                     type: overlay.targetEntityType as EntityType,
                   })}
@@ -138,4 +138,30 @@ function getLinkedImageAssets(
   }
 
   return Array.from(linkedImageAssetsById.values());
+}
+
+function getOverlayEntityAgentKind(entityType?: string | null) {
+  if (entityType !== 'agent') {
+    return undefined;
+  }
+
+  return getEntityDisplayCategory({
+    agentKind: 'person',
+    type: entityType,
+  }).id === 'person'
+    ? 'person'
+    : undefined;
+}
+
+function getOverlayEntityDisplayCategory(entityType?: string | null) {
+  if (entityType === 'agent') {
+    return getEntityDisplayCategory({
+      agentKind: 'person',
+      type: entityType,
+    }).label;
+  }
+
+  return getEntityDisplayCategory({
+    type: entityType ?? 'entity',
+  }).label;
 }

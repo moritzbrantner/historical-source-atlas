@@ -17,6 +17,7 @@ import {
 
 import { getEntityPath } from '../../app/entityRouting';
 import type { EntityType } from '../../domain/dataModel';
+import { getEntityDisplayCategory } from '../../domain/atlasTaxonomy';
 import type { EntitySummary } from '../../domain/entityModel';
 import type {
   AtlasEntityDetail,
@@ -579,7 +580,11 @@ function EntitySummaryLink({ entity }: { entity: EntitySummary }) {
 function summaryPath(entity: EntitySummary) {
   return getEntityPath({
     agentKind:
-      entity.type === 'agent' && entity.displayCategory === 'person'
+      entity.type === 'agent' &&
+      getEntityDisplayCategory({
+        agentKind: entity.displayCategory,
+        type: entity.type,
+      }).id === 'person'
         ? 'person'
         : undefined,
     slug: entity.slug,
@@ -588,17 +593,13 @@ function summaryPath(entity: EntitySummary) {
 }
 
 function displayCategory(detail: AtlasEntityDetail) {
-  if (detail.typed?.type === 'agent') {
-    return detail.typed.agentKind;
-  }
-
-  if (detail.typed?.type === 'place') {
-    return detail.typed.placeKind;
-  }
-
-  if (detail.typed?.type === 'event') {
-    return detail.typed.eventKind;
-  }
-
-  return detail.entity.type.replaceAll('_', ' ');
+  return getEntityDisplayCategory({
+    agentKind:
+      detail.typed?.type === 'agent' ? detail.typed.agentKind : undefined,
+    eventKind:
+      detail.typed?.type === 'event' ? detail.typed.eventKind : undefined,
+    placeKind:
+      detail.typed?.type === 'place' ? detail.typed.placeKind : undefined,
+    type: detail.entity.type,
+  }).label;
 }

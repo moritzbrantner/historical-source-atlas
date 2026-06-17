@@ -10,7 +10,7 @@ export function EvidenceLayerControls({
   onToggleLayer,
   visibleLayerIds,
 }: {
-  layers: EvidenceOverlayLayer[];
+  layers: readonly EvidenceOverlayLayer[];
   onToggleLayer: (layerId: EvidenceLayerId) => void;
   visibleLayerIds: Set<EvidenceLayerId>;
 }) {

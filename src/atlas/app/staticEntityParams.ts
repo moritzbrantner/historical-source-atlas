@@ -1,6 +1,8 @@
-import type { AtlasEntityRouteType } from './entityRouting';
-import { getEntityRouteType } from './entityRouting';
 import { routing } from '@/i18n/routing';
+import {
+  type AtlasEntityRouteType,
+  getEntityRouteType,
+} from '../domain/atlasTaxonomy';
 import { staticAtlasEntityDetails } from '../entities/entity/api/staticEntityData';
 
 export function generateStaticEntityParams(routeType: AtlasEntityRouteType) {

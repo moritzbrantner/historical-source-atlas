@@ -1,28 +1,20 @@
-import type { SourceKind } from './sourceTypes';
+import type { RecordKind } from '../../../domain/dataModel';
+import { atlasSourceKindEntries } from '../../../domain/atlasTaxonomy';
 
-export const allSourceKinds: readonly SourceKind[] = [
-  'archive',
-  'artifact',
-  'collection',
-  'inscription',
-  'manuscript',
-  'text',
-];
+export const allSourceKinds = Object.values(atlasSourceKindEntries)
+  .sort((left, right) => left.order - right.order)
+  .map((entry) => entry.id) as readonly RecordKind[];
 
-export const sourceKindLabels: Record<SourceKind, string> = {
-  archive: 'Archive',
-  artifact: 'Artifact',
-  collection: 'Collection',
-  inscription: 'Inscription',
-  manuscript: 'Manuscript',
-  text: 'Text',
-};
+export const sourceKindLabels = Object.fromEntries(
+  Object.entries(atlasSourceKindEntries).map(([kind, entry]) => [
+    kind,
+    entry.label,
+  ]),
+) as Record<RecordKind, string>;
 
-export const sourceKindColors: Record<SourceKind, string> = {
-  archive: '#6d28d9',
-  artifact: '#b45309',
-  collection: '#be123c',
-  inscription: '#475569',
-  manuscript: '#0f766e',
-  text: '#1d4ed8',
-};
+export const sourceKindColors = Object.fromEntries(
+  Object.entries(atlasSourceKindEntries).map(([kind, entry]) => [
+    kind,
+    entry.color,
+  ]),
+) as Record<RecordKind, string>;
