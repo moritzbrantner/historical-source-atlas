@@ -25,33 +25,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: historical-source-atlas
 
       - name: Checkout sibling maps dependency
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: maps
           repository: ${{ github.repository_owner }}/maps
           token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
 
       - name: Checkout sibling platform packages dependency
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: platform-packages
           repository: ${{ github.repository_owner }}/platform-packages
           token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
 
       - name: Checkout sibling Rust packages dependency
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: rust-packages
           repository: ${{ github.repository_owner }}/rust-packages
           token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
 
       - name: Checkout sibling timeline editor dependency
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: timeline-editor
           repository: ${{ github.repository_owner }}/timeline-editor
