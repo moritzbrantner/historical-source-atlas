@@ -12,6 +12,16 @@
 
 **Evidence Layer**: A user-visible grouping of evidence overlays in text or image review.
 
+**Entity Overlay**: Optional map layer showing published Atlas entities that match the active time range and viewport.
+
+**Existence Window**: The active timeline slider range used to test whether overlay entities existed.
+
+**Known Activity Interval**: Broad date interval during which a person is known to have existed or been active.
+
+**Attested Presence**: A person-place association grounded in an event/place attestation.
+
+**Undated Fallback**: Geometry or presence evidence shown without direct date proof, visibly marked as undated.
+
 **Personal Tag**: A user-authored label on sources; not part of Atlas Taxonomy.
 
 ## Non-Concepts

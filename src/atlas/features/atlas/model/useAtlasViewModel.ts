@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import {
+  createDefaultEntityOverlayLayerState,
+  getEnabledEntityOverlayCategories,
+  type EntityOverlayBounds,
+  type EntityOverlayLayerState,
+} from '../../../domain/entityOverlayModel';
+import {
   filterSources,
   sortSourcesByTimeline,
   type SourceKindFilters,
@@ -20,6 +26,7 @@ const defaultReferenceDirections: SourceReferenceDirection[] = [
   'outgoing',
 ];
 const defaultRelationshipDepth = 1;
+const entityOverlayLayerStorageKey = 'atlas.entityOverlay.layers.v1';
 
 export function useAtlasViewModel(sources: HistoricalSource[]) {
   const [selectedSourceId, setSelectedSourceId] = useState(
@@ -32,18 +39,27 @@ export function useAtlasViewModel(sources: HistoricalSource[]) {
     ...defaultReferenceDirections,
   ]);
   const [query, setQuery] = useState('');
+  const [entityOverlayLayers, setEntityOverlayLayersState] =
+    useState<EntityOverlayLayerState>(() =>
+      createDefaultEntityOverlayLayerState(),
+    );
+  const [mapBounds, setMapBounds] = useState<EntityOverlayBounds | null>(null);
+  const debouncedMapBounds = useDebouncedValue(mapBounds, 250);
   const [timelineMode, setTimelineMode] = useState<TimelineMode>('discovery');
   const timelineModes = useMemo(() => getTimelineModes(sources), [sources]);
   const activeTimelineMode = timelineModes[timelineMode];
   const [timelineRanges, setTimelineRanges] = useState<
     Partial<Record<TimelineMode, YearRange>>
   >({});
-  const activeTimelineRange =
-    timelineRanges[timelineMode] ??
-    getFullTimelineRange(
-      activeTimelineMode.minYear,
-      activeTimelineMode.maxYear,
-    );
+  const activeTimelineRange = useMemo(
+    () =>
+      timelineRanges[timelineMode] ??
+      getFullTimelineRange(
+        activeTimelineMode.minYear,
+        activeTimelineMode.maxYear,
+      ),
+    [activeTimelineMode, timelineMode, timelineRanges],
+  );
   const resolvedTimelineRanges = useMemo(
     () => ({
       discovery:
@@ -87,6 +103,21 @@ export function useAtlasViewModel(sources: HistoricalSource[]) {
   const selectedSource =
     visibleSources.find((source) => source.id === selectedSourceId) ??
     sortedVisibleSources[0];
+  const activeEntityOverlayCategories = useMemo(
+    () => getEnabledEntityOverlayCategories(entityOverlayLayers),
+    [entityOverlayLayers],
+  );
+  const entityOverlayFilters = useMemo(
+    () =>
+      debouncedMapBounds && activeEntityOverlayCategories.length > 0
+        ? {
+            bounds: debouncedMapBounds,
+            categories: activeEntityOverlayCategories,
+            timeRange: activeTimelineRange,
+          }
+        : null,
+    [activeEntityOverlayCategories, activeTimelineRange, debouncedMapBounds],
+  );
 
   const selectedSourceReferenceFlows = useMemo(
     () =>
@@ -121,14 +152,46 @@ export function useAtlasViewModel(sources: HistoricalSource[]) {
     setSelectedSourceId(sortedVisibleSources[0]!.id);
   }, [selectedSource, sortedVisibleSources]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const rawLayers = window.localStorage.getItem(entityOverlayLayerStorageKey);
+
+    if (!rawLayers) {
+      return;
+    }
+
+    try {
+      setEntityOverlayLayersState(parseStoredEntityOverlayLayers(rawLayers));
+    } catch {
+      window.localStorage.removeItem(entityOverlayLayerStorageKey);
+    }
+  }, []);
+
   return {
     activeTimelineMode,
+    activeEntityOverlayCategories,
+    entityOverlayFilters,
+    entityOverlayLayers,
     query,
     referenceDirectionFilters,
     selectedSource,
     selectedSourceId,
     selectedSourceReferenceFlows,
     setQuery,
+    setMapBounds,
+    setEntityOverlayLayers: (layers: EntityOverlayLayerState) => {
+      setEntityOverlayLayersState(layers);
+
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(
+          entityOverlayLayerStorageKey,
+          JSON.stringify(layers),
+        );
+      }
+    },
     setReferenceDirectionFilters,
     setSelectedSourceId,
     setSourceKindFilters,
@@ -209,4 +272,33 @@ function clampYearRange(range: YearRange, min: number, max: number): YearRange {
     max: rangeMax,
     min: rangeMin,
   };
+}
+
+function parseStoredEntityOverlayLayers(
+  rawLayers: string,
+): EntityOverlayLayerState {
+  const parsed = JSON.parse(rawLayers) as Partial<EntityOverlayLayerState>;
+  const defaults = createDefaultEntityOverlayLayerState();
+
+  return {
+    city: parsed.city ?? defaults.city,
+    country: parsed.country ?? defaults.country,
+    person: parsed.person ?? defaults.person,
+  };
+}
+
+function useDebouncedValue<T>(value: T, delayMs: number) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setDebouncedValue(value);
+    }, delayMs);
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [delayMs, value]);
+
+  return debouncedValue;
 }

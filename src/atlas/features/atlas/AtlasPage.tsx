@@ -27,6 +27,7 @@ import {
   useAtlasSourceTagsQuery,
   useReplaceAtlasSourceTagsMutation,
 } from '../../entities/source-tags/api/sourceTagQueries';
+import { useEntityOverlayQuery } from '../../entities/entity-overlay/api/entityOverlayQueries';
 import { AtlasFilters } from './AtlasFilters';
 import { AtlasMap } from './AtlasMap';
 import { AtlasSidebar } from './AtlasSidebar';
@@ -51,6 +52,10 @@ export function AtlasPage({
     useReplaceAtlasCollectionItemsMutation();
   const sources = sourcesQuery.data ?? [];
   const atlas = useAtlasViewModel(sources);
+  const entityOverlayQuery = useEntityOverlayQuery({
+    enabled: atlas.activeEntityOverlayCategories.length > 0,
+    filters: atlas.entityOverlayFilters,
+  });
   const sourceTags = sourceTagsQuery.data?.tags ?? [];
   const sourceTagsBySourceId = useMemo(
     () =>
@@ -126,12 +131,22 @@ export function AtlasPage({
           aria-label="Historical source map"
         >
           <AtlasMap
+            entityOverlayLayers={atlas.entityOverlayLayers}
+            entityOverlays={entityOverlayQuery.data ?? null}
+            entityOverlaysError={
+              entityOverlayQuery.isError
+                ? 'Could not load entity overlays.'
+                : null
+            }
+            entityOverlaysLoading={entityOverlayQuery.isFetching}
             flows={atlas.selectedSourceReferenceFlows}
             referenceDirectionFilters={atlas.referenceDirectionFilters}
             selectedSourceId={atlas.selectedSource?.id ?? null}
             sourceTagsBySourceId={sourceTagsBySourceId}
             sources={atlas.visibleSources}
+            onEntityOverlayLayersChange={atlas.setEntityOverlayLayers}
             onSelectSource={atlas.setSelectedSourceId}
+            onViewportBoundsChange={atlas.setMapBounds}
           />
           <AtlasSidebar
             allSources={sources}

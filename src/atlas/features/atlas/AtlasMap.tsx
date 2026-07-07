@@ -2,6 +2,11 @@
 
 import dynamic from 'next/dynamic';
 
+import type {
+  EntityOverlayBounds,
+  EntityOverlayLayerState,
+  EntityOverlayResult,
+} from '../../domain/entityOverlayModel';
 import type { HistoricalSource } from '../../entities/source/model/sourceTypes';
 import type {
   SourceReferenceDirection,
@@ -11,7 +16,13 @@ import type {
 export { SourcePopup } from './SourcePopup';
 
 export type AtlasMapProps = {
+  entityOverlayLayers: EntityOverlayLayerState;
+  entityOverlays: EntityOverlayResult | null;
+  entityOverlaysError: string | null;
+  entityOverlaysLoading: boolean;
   flows: SourceReferenceFlow[];
+  onEntityOverlayLayersChange: (layers: EntityOverlayLayerState) => void;
+  onViewportBoundsChange: (bounds: EntityOverlayBounds) => void;
   onSelectSource: (sourceId: string) => void;
   referenceDirectionFilters: SourceReferenceDirection[];
   selectedSourceId: string | null;
