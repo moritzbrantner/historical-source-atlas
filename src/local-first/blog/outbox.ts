@@ -44,10 +44,7 @@ export function getNextPublishAttemptAt(
 }
 
 export function isPublishJobReadyForAttempt(
-  job: Pick<
-    BlogPublishJob,
-    'status' | 'nextAttemptAt' | 'lastStatusCode'
-  >,
+  job: Pick<BlogPublishJob, 'status' | 'nextAttemptAt' | 'lastStatusCode'>,
   now: Date,
   retryRetryableNow = false,
 ) {
@@ -130,9 +127,7 @@ async function getNextDuePublishJob(
   const jobs = await getBlogLocalDb()
     .outbox.where('userId')
     .equals(userId)
-    .filter((job) =>
-      isPublishJobReadyForAttempt(job, now, retryRetryableNow),
-    )
+    .filter((job) => isPublishJobReadyForAttempt(job, now, retryRetryableNow))
     .sortBy('nextAttemptAt');
 
   return jobs[0] ?? null;
