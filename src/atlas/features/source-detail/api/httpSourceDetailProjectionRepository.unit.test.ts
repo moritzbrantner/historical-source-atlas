@@ -34,7 +34,10 @@ describe('HTTP source detail projection repository', () => {
   });
 
   it('maps a missing projection to null', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => new Response(null, { status: 404 })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(null, { status: 404 })),
+    );
 
     await expect(
       httpSourceDetailProjectionRepository.getSourceDetailProjection('missing'),

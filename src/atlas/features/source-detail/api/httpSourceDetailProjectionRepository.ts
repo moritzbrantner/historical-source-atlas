@@ -18,12 +18,15 @@ async function readSourceDetailProjection(
   }
 
   if (!response.ok) {
-    throw new Error(`Atlas v2 projection request failed with ${response.status}`);
+    throw new Error(
+      `Atlas v2 projection request failed with ${response.status}`,
+    );
   }
 
   return response.json() as Promise<SourceDetailProjection>;
 }
 
-export const httpSourceDetailProjectionRepository: SourceDetailProjectionRepository = {
-  getSourceDetailProjection: readSourceDetailProjection,
-};
+export const httpSourceDetailProjectionRepository: SourceDetailProjectionRepository =
+  {
+    getSourceDetailProjection: readSourceDetailProjection,
+  };
