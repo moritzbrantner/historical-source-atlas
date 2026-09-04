@@ -198,21 +198,21 @@ describe('v1 to v2 atlas adapter', () => {
     expect(
       result.model.documentary.map((record) => refKey(record.ref)),
     ).toEqual([
-      'documentary:source:source-a',
       'documentary:source-part:source-a-object',
+      'documentary:source:source-a',
     ]);
     expect(result.model.historical.map((record) => refKey(record.ref))).toEqual(
       [
+        'historical:event:source-a-discovery',
         'historical:person:marcus',
         'historical:place:rome',
-        'historical:event:source-a-discovery',
       ],
     );
     expect(result.model.textual.map((record) => refKey(record.ref))).toEqual([
-      'textual:work:work-a',
-      'textual:witness:witness-a',
       'textual:edition:edition-a',
       'textual:text-unit:unit-1',
+      'textual:witness:witness-a',
+      'textual:work:work-a',
     ]);
 
     expect(result.model.annotations).toContainEqual(
