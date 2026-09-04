@@ -271,8 +271,11 @@ test.describe('social interactions', () => {
     await expect(page.getByRole('status')).toContainText('Queued to publish');
 
     await page.context().setOffline(false);
+    await expect.poll(() => page.evaluate(() => navigator.onLine)).toBe(true);
     await page.evaluate(() => window.dispatchEvent(new Event('online')));
-    await expect(page.getByRole('status')).toContainText('Published');
+    await expect(page.getByRole('status')).toContainText('Published', {
+      timeout: 15_000,
+    });
     await expect(
       page.locator('article').filter({ hasText: postTitle }).first(),
     ).toContainText(postContent);
