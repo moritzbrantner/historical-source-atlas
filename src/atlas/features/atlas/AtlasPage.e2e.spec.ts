@@ -16,7 +16,9 @@ test('atlas loads with source list, map, and default source', async ({
   await expect(page.getByLabel('Timeline controls')).toBeVisible();
   await expect(page.getByLabel('Source details')).toBeVisible();
   await expect(page.getByLabel('Source list')).toBeVisible();
-  await expect(page.getByText('12 visible', { exact: true })).toBeVisible();
+  await expect(
+    page.getByText('4 visible sources', { exact: true }),
+  ).toBeVisible();
   await expect(
     page
       .getByLabel('Source details')
@@ -31,16 +33,18 @@ test('atlas loads with source list, map, and default source', async ({
     sourceList.getByRole('button', { name: /Rosetta Stone/ }),
   ).toBeVisible();
   await expect(
-    sourceList.getByRole('button', { name: /Antikythera Mechanism/ }),
+    sourceList.getByRole('button', { name: /Nag Hammadi Codices/ }),
+  ).toBeVisible();
+  await expect(
+    sourceList.getByRole('button', { name: /Oxyrhynchus Papyri/ }),
   ).toBeVisible();
 
   const map = page.locator('.source-map-panel');
   await expect(map).toBeVisible();
-  await expect(map.locator('.leaflet-container')).toBeVisible();
+  await expect(
+    map.getByLabel('Map of historical source discovery locations'),
+  ).toBeVisible();
   await expect(map.getByLabel('Map legend')).toBeVisible();
-  await expect
-    .poll(async () => map.evaluate((element) => element.childElementCount))
-    .toBeGreaterThan(0);
 });
 
 test('search filters source list and can be cleared', async ({ page }) => {
@@ -54,11 +58,13 @@ test('search filters source list and can be cleared', async ({ page }) => {
     sourceList.getByRole('button', { name: /Dead Sea Scrolls/ }),
   ).toBeVisible();
   await expect(
-    sourceList.getByRole('button', { name: /Antikythera Mechanism/ }),
+    sourceList.getByRole('button', { name: /Rosetta Stone/ }),
   ).toHaveCount(0);
 
   await page.getByPlaceholder('Qumran, papyri, Iran...').fill('');
-  await expect(page.getByText('12 visible', { exact: true })).toBeVisible();
+  await expect(
+    page.getByText('4 visible sources', { exact: true }),
+  ).toBeVisible();
 });
 
 test('timeline mode can change and reset to full range', async ({ page }) => {
@@ -69,7 +75,9 @@ test('timeline mode can change and reset to full range', async ({ page }) => {
   await expect(page.getByText(/Source date timeline/)).toBeVisible();
   await expect(page.getByText(/Sources dated by/)).toBeVisible();
   await page.getByRole('button', { name: 'Full range' }).click();
-  await expect(page.getByText('12 visible', { exact: true })).toBeVisible();
+  await expect(
+    page.getByText('4 visible sources', { exact: true }),
+  ).toBeVisible();
 });
 
 test('source kind filters update the visible source list', async ({ page }) => {
@@ -80,13 +88,15 @@ test('source kind filters update the visible source list', async ({ page }) => {
     .filter({ hasText: 'Source type scope' });
   await sourceTypeScope.getByRole('checkbox', { name: 'All' }).nth(5).click();
 
-  await expect(page.getByText('7 visible', { exact: true })).toBeVisible();
+  await expect(page.getByText('3 visible', { exact: true })).toBeVisible();
   await expect(
     page.getByRole('button', { name: 'Clear sourceKinds filter' }),
   ).toBeVisible();
 
   await page.getByRole('button', { name: 'Clear sourceKinds filter' }).click();
-  await expect(page.getByText('12 visible', { exact: true })).toBeVisible();
+  await expect(
+    page.getByText('4 visible sources', { exact: true }),
+  ).toBeVisible();
 });
 
 test('reference direction filters update map link legend', async ({ page }) => {

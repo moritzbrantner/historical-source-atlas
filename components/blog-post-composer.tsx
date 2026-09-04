@@ -98,6 +98,8 @@ export function BlogPostComposer({
   const [localError, setLocalError] = useState<string | null>(null);
   const draftCreationRef = useRef<Promise<LocalBlogDraft> | null>(null);
   const outboxRunningRef = useRef(false);
+  const outboxRerunRef = useRef(false);
+  const outboxRetryNowRef = useRef(false);
 
   const activeDraft =
     drafts.find((draft) => draft.id === activeDraftId) ?? null;
@@ -124,28 +126,54 @@ export function BlogPostComposer({
     setEditorContent(activeDraft.contentMarkdown);
   }, [activeDraft, drafts.length]);
 
-  const runOutbox = useEffectEvent(async (currentUserId: string) => {
-    if (outboxRunningRef.current) {
-      return {
-        processedCount: 0,
-        publishedDraftIds: [],
-      };
-    }
-
-    outboxRunningRef.current = true;
-
-    try {
-      const result = await flushBlogPublishOutbox({ userId: currentUserId });
-
-      if (result.publishedDraftIds.length > 0) {
-        router.refresh();
+  const runOutbox = useEffectEvent(
+    async (currentUserId: string, retryRetryableNow = false) => {
+      if (outboxRunningRef.current) {
+        outboxRerunRef.current = true;
+        outboxRetryNowRef.current ||= retryRetryableNow;
+        return {
+          processedCount: 0,
+          publishedDraftIds: [],
+        };
       }
 
-      return result;
-    } finally {
-      outboxRunningRef.current = false;
-    }
-  });
+      outboxRunningRef.current = true;
+      let retryNowForPass = retryRetryableNow;
+      let processedCount = 0;
+      const publishedDraftIds: string[] = [];
+      let blockedReason: 'offline' | 'unauthenticated' | 'invalid' | undefined;
+
+      try {
+        do {
+          outboxRerunRef.current = false;
+          outboxRetryNowRef.current = false;
+          const result = await flushBlogPublishOutbox({
+            userId: currentUserId,
+            retryRetryableNow: retryNowForPass,
+          });
+
+          processedCount += result.processedCount;
+          publishedDraftIds.push(...result.publishedDraftIds);
+          blockedReason = result.blockedReason;
+          retryNowForPass = outboxRetryNowRef.current;
+        } while (outboxRerunRef.current);
+
+        if (publishedDraftIds.length > 0) {
+          router.refresh();
+        }
+
+        return {
+          ...(blockedReason ? { blockedReason } : {}),
+          processedCount,
+          publishedDraftIds,
+        };
+      } finally {
+        outboxRunningRef.current = false;
+        outboxRerunRef.current = false;
+        outboxRetryNowRef.current = false;
+      }
+    },
+  );
 
   useEffect(() => {
     void runOutbox(userId);
@@ -153,7 +181,7 @@ export function BlogPostComposer({
 
   useEffect(() => {
     function handleOnline() {
-      void runOutbox(userId);
+      void runOutbox(userId, true);
     }
 
     function handleVisibilityChange() {

@@ -19,105 +19,35 @@ env:
   GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
 
 jobs:
-  fast:
+  foundation:
     name: Fast Validation
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          path: historical-source-atlas
-
-      - name: Checkout sibling maps dependency
-        uses: actions/checkout@v6
-        with:
-          path: maps
-          repository: ${{ github.repository_owner }}/maps
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
-
-      - name: Checkout sibling platform packages dependency
-        uses: actions/checkout@v6
-        with:
-          path: platform-packages
-          repository: ${{ github.repository_owner }}/platform-packages
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
-
-      - name: Checkout sibling Rust packages dependency
-        uses: actions/checkout@v6
-        with:
-          path: rust-packages
-          repository: ${{ github.repository_owner }}/rust-packages
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
-
-      - name: Checkout sibling timeline editor dependency
-        uses: actions/checkout@v6
-        with:
-          path: timeline-editor
-          repository: ${{ github.repository_owner }}/timeline-editor
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
-
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
-
-      - name: Install dependencies
-        working-directory: historical-source-atlas
-        run: ./scripts/ci/install-with-sibling-maps.sh
-
-      - name: Run fast checks
-        working-directory: historical-source-atlas
-        run: bun run checks:nightly
+    permissions:
+      contents: read
+      packages: read
+    uses: moritzbrantner/reusable-workflows/.github/workflows/coding-tooling-validation.yml@8d9e69110603bde4c30f5ff240bbb40f6aacd73a
+    with:
+      tier: fast
+      strict: true
+      install_mode: auto
+    secrets: inherit
 
   integration:
     name: Integration Validation
-    needs: fast
+    needs: foundation
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-        with:
-          path: historical-source-atlas
-
-      - name: Checkout sibling maps dependency
-        uses: actions/checkout@v6
-        with:
-          path: maps
-          repository: ${{ github.repository_owner }}/maps
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
-
-      - name: Checkout sibling platform packages dependency
-        uses: actions/checkout@v6
-        with:
-          path: platform-packages
-          repository: ${{ github.repository_owner }}/platform-packages
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
-
-      - name: Checkout sibling Rust packages dependency
-        uses: actions/checkout@v6
-        with:
-          path: rust-packages
-          repository: ${{ github.repository_owner }}/rust-packages
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
-
-      - name: Checkout sibling timeline editor dependency
-        uses: actions/checkout@v6
-        with:
-          path: timeline-editor
-          repository: ${{ github.repository_owner }}/timeline-editor
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.3.14
+          bun-version: 1.4.0
 
       - name: Install dependencies
-        working-directory: historical-source-atlas
-        run: ./scripts/ci/install-with-sibling-maps.sh
+        run: bun install --frozen-lockfile
 
       - name: Run integration checks
-        working-directory: historical-source-atlas
         run: |
           set -euo pipefail
           bun run db:check
@@ -131,66 +61,32 @@ jobs:
           if-no-files-found: ignore
           name: integration-docker-state
           path: |
-            historical-source-atlas/test-results
-            historical-source-atlas/playwright-report
+            test-results
+            playwright-report
 
   storybook:
     name: Storybook Validation
-    needs: fast
+    needs: foundation
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-        with:
-          path: historical-source-atlas
-
-      - name: Checkout sibling maps dependency
-        uses: actions/checkout@v6
-        with:
-          path: maps
-          repository: ${{ github.repository_owner }}/maps
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
-
-      - name: Checkout sibling platform packages dependency
-        uses: actions/checkout@v6
-        with:
-          path: platform-packages
-          repository: ${{ github.repository_owner }}/platform-packages
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
-
-      - name: Checkout sibling Rust packages dependency
-        uses: actions/checkout@v6
-        with:
-          path: rust-packages
-          repository: ${{ github.repository_owner }}/rust-packages
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
-
-      - name: Checkout sibling timeline editor dependency
-        uses: actions/checkout@v6
-        with:
-          path: timeline-editor
-          repository: ${{ github.repository_owner }}/timeline-editor
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.3.14
+          bun-version: 1.4.0
 
       - name: Install dependencies
-        working-directory: historical-source-atlas
-        run: ./scripts/ci/install-with-sibling-maps.sh
+        run: bun install --frozen-lockfile
 
       - name: Install Playwright browser
-        working-directory: historical-source-atlas
         run: bunx playwright install --with-deps chromium
 
       - name: Build Storybook
-        working-directory: historical-source-atlas
         run: bun run storybook:build
 
       - name: Run Storybook tests
-        working-directory: historical-source-atlas
         run: bun run test:storybook
 
       - name: Upload Storybook artifact
@@ -199,7 +95,7 @@ jobs:
         with:
           if-no-files-found: ignore
           name: storybook-static
-          path: historical-source-atlas/storybook-static
+          path: storybook-static
 
   pages-export:
     name: GitHub Pages Export
@@ -208,55 +104,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-        with:
-          path: historical-source-atlas
-
-      - name: Checkout sibling maps dependency
-        uses: actions/checkout@v6
-        with:
-          path: maps
-          repository: ${{ github.repository_owner }}/maps
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
-
-      - name: Checkout sibling platform packages dependency
-        uses: actions/checkout@v6
-        with:
-          path: platform-packages
-          repository: ${{ github.repository_owner }}/platform-packages
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
-
-      - name: Checkout sibling Rust packages dependency
-        uses: actions/checkout@v6
-        with:
-          path: rust-packages
-          repository: ${{ github.repository_owner }}/rust-packages
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
-
-      - name: Checkout sibling timeline editor dependency
-        uses: actions/checkout@v6
-        with:
-          path: timeline-editor
-          repository: ${{ github.repository_owner }}/timeline-editor
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.3.14
+          bun-version: 1.4.0
 
       - name: Install dependencies
-        working-directory: historical-source-atlas
-        run: ./scripts/ci/install-with-sibling-maps.sh
+        run: bun install --frozen-lockfile
 
       - name: Build GitHub Pages artifact
-        working-directory: historical-source-atlas
         env:
           NEXT_DEPLOY_TARGET: gh-pages
           GITHUB_PAGES_BASE_PATH: /${{ github.event.repository.name }}
         run: bun run build:gh-pages
 
       - name: Verify Unlighthouse summary output
-        working-directory: historical-source-atlas
         run: |
           set -euo pipefail
           test -f .generated/unlighthouse/ci-result.json
@@ -270,48 +133,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-        with:
-          path: historical-source-atlas
-
-      - name: Checkout sibling maps dependency
-        uses: actions/checkout@v6
-        with:
-          path: maps
-          repository: ${{ github.repository_owner }}/maps
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
-
-      - name: Checkout sibling platform packages dependency
-        uses: actions/checkout@v6
-        with:
-          path: platform-packages
-          repository: ${{ github.repository_owner }}/platform-packages
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
-
-      - name: Checkout sibling Rust packages dependency
-        uses: actions/checkout@v6
-        with:
-          path: rust-packages
-          repository: ${{ github.repository_owner }}/rust-packages
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
-
-      - name: Checkout sibling timeline editor dependency
-        uses: actions/checkout@v6
-        with:
-          path: timeline-editor
-          repository: ${{ github.repository_owner }}/timeline-editor
-          token: ${{ secrets.GH_PACKAGES_TOKEN || github.token }}
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.3.14
+          bun-version: 1.4.0
 
       - name: Install dependencies
-        working-directory: historical-source-atlas
-        run: ./scripts/ci/install-with-sibling-maps.sh
+        run: bun install --frozen-lockfile
 
       - name: Build app
-        working-directory: historical-source-atlas
         env:
           AUTH_SECRET: ci-build-secret-ci-build-secret
           DATABASE_URL: postgresql://atlas:atlas_password@127.0.0.1:55434/historical_source_atlas?schema=public
@@ -327,7 +158,6 @@ jobs:
         run: bun run build
 
       - name: Run e2e tests
-        working-directory: historical-source-atlas
         run: ./scripts/ci/run-e2e.sh
 
       - name: Upload Playwright artifacts
@@ -337,5 +167,5 @@ jobs:
           if-no-files-found: ignore
           name: playwright-results
           path: |
-            historical-source-atlas/test-results
-            historical-source-atlas/playwright-report
+            test-results
+            playwright-report

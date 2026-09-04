@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   calculatePublishRetryDelayMs,
   getNextPublishAttemptAt,
+  isPublishJobReadyForAttempt,
   isRetryablePublishStatus,
   resolveDraftStatusAfterPublishFailure,
 } from '@/src/local-first/blog/outbox';
@@ -35,5 +36,54 @@ describe('local-first blog outbox', () => {
     expect(nextAttemptAt.getTime()).toBeGreaterThan(
       now.getTime() + 300 * 24 * 60 * 60 * 1_000,
     );
+  });
+
+  it('lets explicit reconnect bypass backoff only for retryable failures', () => {
+    const now = new Date('2026-04-16T10:00:00.000Z');
+    const future = new Date(now.getTime() + 60_000);
+
+    expect(
+      isPublishJobReadyForAttempt(
+        {
+          status: 'failed',
+          nextAttemptAt: future,
+          lastStatusCode: null,
+        },
+        now,
+      ),
+    ).toBe(false);
+    expect(
+      isPublishJobReadyForAttempt(
+        {
+          status: 'failed',
+          nextAttemptAt: future,
+          lastStatusCode: null,
+        },
+        now,
+        true,
+      ),
+    ).toBe(true);
+    expect(
+      isPublishJobReadyForAttempt(
+        {
+          status: 'failed',
+          nextAttemptAt: future,
+          lastStatusCode: 503,
+        },
+        now,
+        true,
+      ),
+    ).toBe(true);
+    expect(
+      isPublishJobReadyForAttempt(
+        {
+          status: 'failed',
+          nextAttemptAt: future,
+          lastStatusCode: 400,
+        },
+        now,
+        true,
+      ),
+    ).toBe(false);
   });
 });

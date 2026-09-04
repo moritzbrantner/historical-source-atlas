@@ -1,10 +1,10 @@
-// scripts/e2e/global-setup.cts
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { applyE2EEnvironment } from './environment';
 
-const setupFile = __filename;
+const setupFile = fileURLToPath(import.meta.url);
 const setupDir = path.dirname(setupFile);
 const appRoot = path.resolve(setupDir, '../..');
 

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "profile": "repository-foundation-v1",
+  "tiers": {
+    "fast": ["format:check", "lint", "typecheck", "test:unit"],
+    "integration": ["test:integration"],
+    "e2e": ["test:e2e"],
+    "performance": ["benchmark:smoke"],
+    "full": [
+      "format:check",
+      "lint",
+      "typecheck",
+      "test:unit",
+      "test:integration",
+      "storybook:check",
+      "build",
+      "test:e2e"
+    ]
+  },
+  "requiredCapabilities": ["format:check", "lint", "typecheck", "test:unit"],
+  "optionalCapabilities": [
+    "build",
+    "test:integration",
+    "test:e2e",
+    "storybook:check",
+    "benchmark:smoke",
+    "web:audit"
+  ],
+  "capabilityCommands": {
+    ".": {
+      "format:check": ["bun", "run", "format:check"],
+      "lint": ["bun", "run", "lint"],
+      "typecheck": ["bun", "run", "typecheck"],
+      "build": ["bun", "run", "build"],
+      "test:unit": ["bun", "run", "test:unit"],
+      "test:integration": ["bun", "run", "test:integration"],
+      "test:e2e": ["bun", "run", "test:e2e"],
+      "storybook:check": [
+        "bash",
+        "-lc",
+        "bun run storybook:build && bun run test:storybook"
+      ],
+      "benchmark:smoke": ["bun", "run", "bench:ci"],
+      "web:audit": ["bun", "run", "build:gh-pages"]
+    }
+  },
+  "contracts": {
+    "enforcement": "protect-new"
+  }
+}

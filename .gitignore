@@ -13,7 +13,7 @@
 /coverage
 /storybook-static
 
-# tanstack start
+# Next.js and build outputs
 /.next/
 /out/
 /dist/
@@ -23,6 +23,10 @@
 
 # production
 /build
+
+# generated tooling artifacts
+/.artifacts/
+/.generated/
 
 # misc
 .DS_Store
@@ -48,6 +52,5 @@ yarn-error.log*
 
 test-results/
 playwright-report/
-/.generated/
 public/local-profile-images/
 public/atlas-manuscripts/

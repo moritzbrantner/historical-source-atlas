@@ -37,6 +37,40 @@ declare
   repository_holding_id uuid;
   text_work_entity_id uuid;
 begin
+  -- Text witnesses can point at carriers owned by this source with ON DELETE SET NULL.
+  -- Remove their edition/witness entities first so replacing a carrier cannot violate
+  -- text_witnesses_has_carrier during an idempotent seed rerun.
+  delete from entities
+  where id in (
+    select te.entity_id
+    from text_editions te
+    join text_witnesses tw on tw.id = te.text_witness_id
+    left join physical_objects po on po.id = tw.physical_object_id
+    left join entities physical_entity on physical_entity.id = po.entity_id
+    left join inscriptions inscription on inscription.id = tw.inscription_id
+    left join entities inscription_entity on inscription_entity.id = inscription.entity_id
+    left join manuscript_units manuscript on manuscript.id = tw.manuscript_unit_id
+    left join entities manuscript_entity on manuscript_entity.id = manuscript.entity_id
+    where physical_entity.slug = p_slug || '-object'
+      or inscription_entity.slug = p_slug || '-inscription'
+      or manuscript_entity.slug = p_slug || '-manuscript'
+  );
+
+  delete from entities
+  where id in (
+    select tw.entity_id
+    from text_witnesses tw
+    left join physical_objects po on po.id = tw.physical_object_id
+    left join entities physical_entity on physical_entity.id = po.entity_id
+    left join inscriptions inscription on inscription.id = tw.inscription_id
+    left join entities inscription_entity on inscription_entity.id = inscription.entity_id
+    left join manuscript_units manuscript on manuscript.id = tw.manuscript_unit_id
+    left join entities manuscript_entity on manuscript_entity.id = manuscript.entity_id
+    where physical_entity.slug = p_slug || '-object'
+      or inscription_entity.slug = p_slug || '-inscription'
+      or manuscript_entity.slug = p_slug || '-manuscript'
+  );
+
   delete from entities
   where slug = any(array[
     p_slug,
@@ -356,213 +390,5 @@ select pg_temp.seed_current_atlas_source(
   $$[
     {"label":"Greek literature","note":"Fragments preserve known and otherwise lost works by classical authors.","relation":"transmits"},
     {"label":"Daily administration","note":"Receipts, petitions, leases, and letters document local social and economic life.","relation":"records"}
-  ]$$::jsonb
-);
-
-select pg_temp.seed_current_atlas_source(
-  'derveni-papyrus',
-  'Derveni Papyrus',
-  'text',
-  40.689,
-  22.853,
-  7,
-  $$Archaeological Museum of Thessaloniki$$,
-  '1962',
-  1962,
-  $$Derveni, near Thessaloniki, Greece$$,
-  $$Late 4th century BC$$,
-  -350,
-  'Aegean',
-  $$The oldest surviving European manuscript, preserving a philosophical commentary on an Orphic poem.$$,
-  $$The charred roll was found in a cremation grave during road works near Derveni outside Thessaloniki.$$,
-  $$[
-    {"label":"Derveni Papyrus editions","note":"Referenced by column and line in philological editions of the papyrus.","relation":"catalogued in"},
-    {"label":"Greek philosophy and religion","note":"Cited in studies of Presocratic interpretation, allegory, and Orphic poetry.","relation":"cited in"}
-  ]$$::jsonb,
-  $$[
-    {"label":"Orphic poem","note":"The surviving prose comments on verses attributed to Orpheus.","relation":"comments on"},
-    {"label":"Ritual and cosmology","note":"The author explains divine names and ritual language as physical allegory.","relation":"interprets"}
-  ]$$::jsonb
-);
-
-select pg_temp.seed_current_atlas_source(
-  'vindolanda-tablets',
-  'Vindolanda Tablets',
-  'text',
-  54.991,
-  -2.361,
-  7,
-  $$British Museum and Vindolanda Museum$$,
-  'From 1973',
-  1973,
-  $$Vindolanda Roman fort, northern England$$,
-  $$1st-2nd century AD$$,
-  1,
-  'Britain',
-  $$Thin wooden writing tablets preserving everyday military and personal correspondence from Roman Britain.$$,
-  $$Excavators found waterlogged wooden tablets in anaerobic deposits at the Roman fort of Vindolanda.$$,
-  $$[
-    {"label":"Tabulae Vindolandenses","note":"Published and cited by tablet number in the Vindolanda tablet editions.","relation":"catalogued in"},
-    {"label":"Roman Britain histories","note":"Used as evidence for frontier command, supply, literacy, and household life.","relation":"cited in"}
-  ]$$::jsonb,
-  $$[
-    {"label":"Roman frontier administration","note":"Orders, reports, and requests document the work of an auxiliary fort.","relation":"records"},
-    {"label":"Personal correspondence","note":"Letters mention invitations, supplies, names, and social ties around the garrison.","relation":"preserves"}
-  ]$$::jsonb
-);
-
-select pg_temp.seed_current_atlas_source(
-  'antikythera-mechanism',
-  'Antikythera Mechanism',
-  'artifact',
-  35.865,
-  23.307,
-  8,
-  $$National Archaeological Museum, Athens$$,
-  '1901',
-  1901,
-  $$Antikythera shipwreck, Greece$$,
-  $$2nd-1st century BC$$,
-  -200,
-  'Aegean',
-  $$A geared bronze device used to model astronomical cycles and predict eclipses.$$,
-  $$Sponge divers recovered corroded bronze fragments from the Antikythera shipwreck between Kythera and Crete.$$,
-  $$[
-    {"label":"Shipwreck excavation records","note":"Referenced through the Antikythera wreck assemblage and museum inventory.","relation":"catalogued in"},
-    {"label":"History of science studies","note":"Cited as evidence for advanced Hellenistic geared astronomical modeling.","relation":"cited in"}
-  ]$$::jsonb,
-  $$[
-    {"label":"Astronomical cycles","note":"Gear trains model lunar, solar, eclipse, and calendrical cycles.","relation":"computes"},
-    {"label":"Greek month and festival calendars","note":"Inscriptions and dials connect calculations to calendrical display.","relation":"indexes"}
-  ]$$::jsonb
-);
-
-select pg_temp.seed_current_atlas_source(
-  'behistun-inscription',
-  'Behistun Inscription',
-  'inscription',
-  34.386,
-  47.436,
-  9,
-  $$In situ at Mount Behistun$$,
-  'Copied and studied in the 19th century',
-  1835,
-  $$Mount Behistun, Iran$$,
-  $$c. 520 BC$$,
-  -520,
-  'Iran',
-  $$A royal inscription of Darius I in Old Persian, Elamite, and Babylonian that helped decipher cuneiform.$$,
-  $$Henry Rawlinson and other scholars copied the high cliff inscription at Mount Behistun in stages during the 1830s and 1840s.$$,
-  $$[
-    {"label":"Cuneiform decipherment histories","note":"Referenced as the trilingual anchor for Old Persian and related cuneiform scripts.","relation":"cited in"},
-    {"label":"Achaemenid royal inscription corpora","note":"Catalogued as a major Darius I royal inscription.","relation":"catalogued in"}
-  ]$$::jsonb,
-  $$[
-    {"label":"Darius I's accession","note":"The text narrates Darius's claim to kingship and suppression of rivals.","relation":"proclaims"},
-    {"label":"Old Persian, Elamite, and Babylonian","note":"The same royal message appears in three cuneiform languages.","relation":"parallels"}
-  ]$$::jsonb
-);
-
-select pg_temp.seed_current_atlas_source(
-  'amarna-letters',
-  'Amarna Letters',
-  'text',
-  27.646,
-  30.896,
-  8,
-  $$Museums in Berlin, London, Cairo, and elsewhere$$,
-  '1887',
-  1887,
-  $$Tell el-Amarna, Egypt$$,
-  $$14th century BC$$,
-  -1400,
-  'Egypt',
-  $$Clay tablets preserving diplomatic correspondence between Egypt and Near Eastern rulers.$$,
-  $$Local villagers found cuneiform tablets in the ruins of Akhenaten's capital at Tell el-Amarna.$$,
-  $$[
-    {"label":"El-Amarna tablet editions","note":"Referenced by EA tablet number in editions and diplomatic histories.","relation":"catalogued in"},
-    {"label":"Late Bronze Age studies","note":"Cited for international diplomacy, vassal politics, and scribal practice.","relation":"cited in"}
-  ]$$::jsonb,
-  $$[
-    {"label":"Near Eastern rulers","note":"Letters name kings of Babylon, Mitanni, Assyria, Hatti, and city-state rulers.","relation":"corresponds with"},
-    {"label":"Tribute, marriage, and military requests","note":"The archive records diplomatic negotiation and local appeals to Pharaoh.","relation":"records"}
-  ]$$::jsonb
-);
-
-select pg_temp.seed_current_atlas_source(
-  'codex-sinaiticus',
-  'Codex Sinaiticus',
-  'manuscript',
-  28.556,
-  33.976,
-  8,
-  $$British Library, Leipzig, St Catherine's Monastery, and National Library of Russia$$,
-  '1844-1859',
-  1844,
-  $$St Catherine's Monastery, Sinai$$,
-  $$4th century AD$$,
-  300,
-  'Sinai',
-  $$One of the earliest largely complete manuscripts of the Christian Bible in Greek.$$,
-  $$Constantin von Tischendorf encountered leaves at St Catherine's Monastery in Sinai during several nineteenth-century visits.$$,
-  $$[
-    {"label":"New Testament critical apparatuses","note":"Cited with the siglum Aleph in editions comparing Greek biblical witnesses.","relation":"cited in"},
-    {"label":"Codex Sinaiticus project records","note":"Referenced by folio, quire, and holding institution in digital and print catalogues.","relation":"catalogued in"}
-  ]$$::jsonb,
-  $$[
-    {"label":"Greek Christian Bible","note":"Preserves much of the Septuagint and the complete New Testament.","relation":"copies"},
-    {"label":"Early Christian book production","note":"Its corrections and format show scribal collaboration in a large codex.","relation":"evidences"}
-  ]$$::jsonb
-);
-
-select pg_temp.seed_current_atlas_source(
-  'stele-hammurabi',
-  'Stele of Hammurabi',
-  'inscription',
-  32.189,
-  48.257,
-  9,
-  $$Louvre Museum$$,
-  '1901',
-  1901,
-  $$Susa, Iran$$,
-  $$c. 1754 BC$$,
-  -1754,
-  'Mesopotamia',
-  $$A basalt stele preserving the Babylonian legal collection associated with King Hammurabi.$$,
-  $$French excavators found the basalt stele broken into pieces at Susa, where it had been taken as booty in antiquity.$$,
-  $$[
-    {"label":"Old Babylonian law studies","note":"Referenced by law number and prologue or epilogue section in legal history.","relation":"cited in"},
-    {"label":"Louvre Near Eastern collections","note":"Catalogued as a royal monument from Susa preserving Hammurabi's laws.","relation":"catalogued in"}
-  ]$$::jsonb,
-  $$[
-    {"label":"Hammurabi's kingship","note":"The prologue and image present the king as divinely authorized lawgiver.","relation":"proclaims"},
-    {"label":"Legal cases and penalties","note":"The clauses describe property, family, injury, labor, and commercial disputes.","relation":"codifies"}
-  ]$$::jsonb
-);
-
-select pg_temp.seed_current_atlas_source(
-  'herculaneum-papyri',
-  'Herculaneum Papyri',
-  'text',
-  40.806,
-  14.348,
-  7,
-  $$Biblioteca Nazionale Vittorio Emanuele III, Naples$$,
-  '1752-1754',
-  1752,
-  $$Villa of the Papyri, Herculaneum$$,
-  $$1st century BC-1st century AD$$,
-  -100,
-  'Italy',
-  $$Carbonized scrolls from a Roman villa, many preserving Epicurean philosophical works.$$,
-  $$Workers tunneling through the buried Villa of the Papyri at Herculaneum uncovered carbonized scrolls preserved by the eruption of AD 79.$$,
-  $$[
-    {"label":"Herculaneum papyri catalogues","note":"Referenced by PHerc. numbers and roll history in papyrological catalogues.","relation":"catalogued in"},
-    {"label":"Epicurean philosophy studies","note":"Cited as major witnesses for Philodemus and the library of the villa.","relation":"cited in"}
-  ]$$::jsonb,
-  $$[
-    {"label":"Philodemus and Epicurean texts","note":"Many readable rolls preserve philosophical treatises associated with Philodemus.","relation":"transmits"},
-    {"label":"Roman elite library culture","note":"The find context links Greek philosophical books to a luxury villa collection.","relation":"evidences"}
   ]$$::jsonb
 );

@@ -43,6 +43,26 @@ export function getNextPublishAttemptAt(
   );
 }
 
+export function isPublishJobReadyForAttempt(
+  job: Pick<BlogPublishJob, 'status' | 'nextAttemptAt' | 'lastStatusCode'>,
+  now: Date,
+  retryRetryableNow = false,
+) {
+  if (job.status !== 'pending' && job.status !== 'failed') {
+    return false;
+  }
+
+  if (job.nextAttemptAt.getTime() <= now.getTime()) {
+    return true;
+  }
+
+  return (
+    retryRetryableNow &&
+    job.status === 'failed' &&
+    isRetryablePublishStatus(job.lastStatusCode ?? undefined)
+  );
+}
+
 export async function queueBlogDraftForPublish(input: {
   userId: string;
   draftId: string;
@@ -99,15 +119,15 @@ export async function queueBlogDraftForPublish(input: {
   });
 }
 
-async function getNextDuePublishJob(userId: string, now: Date) {
+async function getNextDuePublishJob(
+  userId: string,
+  now: Date,
+  retryRetryableNow = false,
+) {
   const jobs = await getBlogLocalDb()
     .outbox.where('userId')
     .equals(userId)
-    .filter(
-      (job) =>
-        (job.status === 'pending' || job.status === 'failed') &&
-        job.nextAttemptAt.getTime() <= now.getTime(),
-    )
+    .filter((job) => isPublishJobReadyForAttempt(job, now, retryRetryableNow))
     .sortBy('nextAttemptAt');
 
   return jobs[0] ?? null;
@@ -133,6 +153,27 @@ async function withPublishOutboxLock<T>(callback: () => Promise<T>) {
   }
 
   return callback();
+}
+
+async function restoreJobAfterOfflineInterruption(job: BlogPublishJob) {
+  const db = getBlogLocalDb();
+  const now = new Date();
+
+  await db.transaction('rw', db.drafts, db.outbox, async () => {
+    await db.outbox.update(job.id, {
+      status: 'pending',
+      nextAttemptAt: now,
+      updatedAt: now,
+      lastError: null,
+      lastStatusCode: null,
+    });
+
+    await db.drafts.update(job.draftId, {
+      status: 'queued_publish',
+      updatedAt: now,
+      lastError: null,
+    });
+  });
 }
 
 async function updateJobFailure(input: {
@@ -198,6 +239,14 @@ async function processBlogPublishJob(job: BlogPublishJob) {
     });
 
     if (!response.ok) {
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        await restoreJobAfterOfflineInterruption(job);
+        return {
+          ok: false as const,
+          blockedReason: 'offline' as const,
+        };
+      }
+
       const problem = await readProblemDetail(
         response,
         'Unable to publish your blog post right now. Please try again.',
@@ -237,6 +286,14 @@ async function processBlogPublishJob(job: BlogPublishJob) {
       draftId: job.draftId,
     };
   } catch {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      await restoreJobAfterOfflineInterruption(job);
+      return {
+        ok: false as const,
+        blockedReason: 'offline' as const,
+      };
+    }
+
     await updateJobFailure({
       job,
       errorMessage:
@@ -251,6 +308,7 @@ async function processBlogPublishJob(job: BlogPublishJob) {
 
 export async function flushBlogPublishOutbox(input: {
   userId: string;
+  retryRetryableNow?: boolean;
 }): Promise<FlushBlogPublishOutboxResult> {
   if (typeof navigator !== 'undefined' && !navigator.onLine) {
     return {
@@ -265,7 +323,11 @@ export async function flushBlogPublishOutbox(input: {
     const publishedDraftIds: string[] = [];
 
     while (true) {
-      const job = await getNextDuePublishJob(input.userId, new Date());
+      const job = await getNextDuePublishJob(
+        input.userId,
+        new Date(),
+        input.retryRetryableNow,
+      );
 
       if (!job) {
         return {
