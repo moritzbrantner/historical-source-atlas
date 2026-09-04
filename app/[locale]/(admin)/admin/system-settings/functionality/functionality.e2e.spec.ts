@@ -113,14 +113,15 @@ test.describe('superadmin functionality controls', () => {
       .getByRole('textbox', { name: 'Search by name' })
       .fill('Ava Adler');
 
-    const avaSearchResult = page
+    const avaSearchResult = searchDialog
       .locator('div.rounded-lg')
       .filter({ hasText: 'Ava Adler' })
-      .filter({ has: page.getByRole('button', { name: 'Follow' }) })
       .first();
     await expect(avaSearchResult).toBeVisible();
 
-    await avaSearchResult.getByRole('button', { name: 'Follow' }).click();
+    await avaSearchResult
+      .getByRole('button', { name: 'Follow', exact: true })
+      .click();
     await expect(getFriendsCard(page)).toContainText(
       'You are following Ava Adler. They will appear here when they follow you back.',
     );
