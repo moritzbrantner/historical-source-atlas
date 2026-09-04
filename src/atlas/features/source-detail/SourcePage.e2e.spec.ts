@@ -22,7 +22,7 @@ test('direct source route renders source page', async ({ page }) => {
     page.getByRole('button', { name: /community in the wilderness/ }),
   ).toBeVisible();
   await expect(
-    page.getByRole('heading', { name: 'Reference Network' }),
+    page.getByRole('button', { name: /^Reference Network/ }),
   ).toBeVisible();
   await expect(
     page.getByRole('heading', { name: 'Atlas Context' }),
@@ -78,7 +78,7 @@ test('source page back button and browser history return between views', async (
   await expect(page).toHaveURL(/\/sources\/rosetta-stone$/);
   await page.getByRole('button', { name: 'Back to atlas' }).click();
 
-  await expect(page).toHaveURL('/');
+  await expect(page).toHaveURL(/\/en\/atlas$/);
   await expect(page.getByLabel('Source list')).toBeVisible();
 
   await page.goBack();
@@ -112,7 +112,7 @@ test('mobile source page remains usable without horizontal overflow', async ({
   ).toBeVisible();
   await expect(page.getByText('Location')).toBeVisible();
   await expect(
-    page.getByRole('heading', { name: 'Reference Network' }),
+    page.getByRole('button', { name: /^Reference Network/ }),
   ).toBeVisible();
   await expect(
     page.getByRole('heading', { name: 'Evidence Review' }),
