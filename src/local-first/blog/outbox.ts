@@ -219,6 +219,14 @@ async function processBlogPublishJob(job: BlogPublishJob) {
     });
 
     if (!response.ok) {
+      if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        await restoreJobAfterOfflineInterruption(job);
+        return {
+          ok: false as const,
+          blockedReason: 'offline' as const,
+        };
+      }
+
       const problem = await readProblemDetail(
         response,
         'Unable to publish your blog post right now. Please try again.',
