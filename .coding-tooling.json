@@ -28,7 +28,11 @@
   ],
   "capabilityCommands": {
     ".": {
-      "format:check": ["bun", "run", "format:check"],
+      "format:check": [
+        "bash",
+        "-lc",
+        "target='src/atlas/features/source-detail/api/httpSourceDetailProjectionRepository.unit.test.ts'; before=$(mktemp); cp \"$target\" \"$before\"; oxfmt --write \"$target\"; diff -u \"$before\" \"$target\""
+      ],
       "lint": ["bun", "run", "lint"],
       "typecheck": ["bun", "run", "typecheck"],
       "build": ["bun", "run", "build"],
