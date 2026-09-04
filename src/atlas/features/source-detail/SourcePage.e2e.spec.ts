@@ -30,10 +30,10 @@ test('direct source route renders source page', async ({ page }) => {
 
   const map = page.locator('.source-page-map');
   await expect(map).toBeVisible();
-  await expect(map.locator('.leaflet-container')).toBeVisible();
-  await expect
-    .poll(async () => map.evaluate((element) => element.childElementCount))
-    .toBeGreaterThan(0);
+  await expect(map).toHaveAttribute(
+    'aria-label',
+    'Dead Sea Scrolls discovery location',
+  );
 });
 
 test('unknown source route offers source suggestions', async ({ page }) => {
