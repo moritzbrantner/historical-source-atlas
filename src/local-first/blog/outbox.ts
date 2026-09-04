@@ -43,6 +43,29 @@ export function getNextPublishAttemptAt(
   );
 }
 
+export function isPublishJobReadyForAttempt(
+  job: Pick<
+    BlogPublishJob,
+    'status' | 'nextAttemptAt' | 'lastStatusCode'
+  >,
+  now: Date,
+  retryRetryableNow = false,
+) {
+  if (job.status !== 'pending' && job.status !== 'failed') {
+    return false;
+  }
+
+  if (job.nextAttemptAt.getTime() <= now.getTime()) {
+    return true;
+  }
+
+  return (
+    retryRetryableNow &&
+    job.status === 'failed' &&
+    isRetryablePublishStatus(job.lastStatusCode ?? undefined)
+  );
+}
+
 export async function queueBlogDraftForPublish(input: {
   userId: string;
   draftId: string;
@@ -99,14 +122,16 @@ export async function queueBlogDraftForPublish(input: {
   });
 }
 
-async function getNextDuePublishJob(userId: string, now: Date) {
+async function getNextDuePublishJob(
+  userId: string,
+  now: Date,
+  retryRetryableNow = false,
+) {
   const jobs = await getBlogLocalDb()
     .outbox.where('userId')
     .equals(userId)
-    .filter(
-      (job) =>
-        (job.status === 'pending' || job.status === 'failed') &&
-        job.nextAttemptAt.getTime() <= now.getTime(),
+    .filter((job) =>
+      isPublishJobReadyForAttempt(job, now, retryRetryableNow),
     )
     .sortBy('nextAttemptAt');
 
@@ -288,6 +313,7 @@ async function processBlogPublishJob(job: BlogPublishJob) {
 
 export async function flushBlogPublishOutbox(input: {
   userId: string;
+  retryRetryableNow?: boolean;
 }): Promise<FlushBlogPublishOutboxResult> {
   if (typeof navigator !== 'undefined' && !navigator.onLine) {
     return {
@@ -302,7 +328,11 @@ export async function flushBlogPublishOutbox(input: {
     const publishedDraftIds: string[] = [];
 
     while (true) {
-      const job = await getNextDuePublishJob(input.userId, new Date());
+      const job = await getNextDuePublishJob(
+        input.userId,
+        new Date(),
+        input.retryRetryableNow,
+      );
 
       if (!job) {
         return {
