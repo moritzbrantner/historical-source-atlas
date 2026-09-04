@@ -36,8 +36,9 @@ const DynamicAtlasMapClient = dynamic(
     ssr: false,
     loading: () => (
       <div
-        className="source-map-panel min-h-[620px] min-w-0 overflow-hidden rounded-lg border border-slate-300 bg-slate-200 shadow-xl shadow-slate-900/10"
         aria-label="Map of historical source discovery locations"
+        className="source-map-panel min-h-[620px] min-w-0 overflow-hidden rounded-lg border border-slate-300 bg-slate-200 shadow-xl shadow-slate-900/10"
+        role="region"
       />
     ),
   },
