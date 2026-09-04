@@ -1,6 +1,7 @@
 name: Materialize Foundation Conventions
 
 on:
+  pull_request:
   push:
     branches:
       - foundation/complete-environment-renovate
