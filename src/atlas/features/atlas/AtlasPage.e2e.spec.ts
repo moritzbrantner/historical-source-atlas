@@ -41,11 +41,10 @@ test('atlas loads with source list, map, and default source', async ({
 
   const map = page.locator('.source-map-panel');
   await expect(map).toBeVisible();
-  await expect(map.locator('.leaflet-container')).toBeVisible();
+  await expect(
+    map.getByLabel('Map of historical source discovery locations'),
+  ).toBeVisible();
   await expect(map.getByLabel('Map legend')).toBeVisible();
-  await expect
-    .poll(async () => map.evaluate((element) => element.childElementCount))
-    .toBeGreaterThan(0);
 });
 
 test('search filters source list and can be cleared', async ({ page }) => {
