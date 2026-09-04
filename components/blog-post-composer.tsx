@@ -98,6 +98,7 @@ export function BlogPostComposer({
   const [localError, setLocalError] = useState<string | null>(null);
   const draftCreationRef = useRef<Promise<LocalBlogDraft> | null>(null);
   const outboxRunningRef = useRef(false);
+  const outboxRerunRef = useRef(false);
 
   const activeDraft =
     drafts.find((draft) => draft.id === activeDraftId) ?? null;
@@ -126,6 +127,7 @@ export function BlogPostComposer({
 
   const runOutbox = useEffectEvent(async (currentUserId: string) => {
     if (outboxRunningRef.current) {
+      outboxRerunRef.current = true;
       return {
         processedCount: 0,
         publishedDraftIds: [],
@@ -133,15 +135,29 @@ export function BlogPostComposer({
     }
 
     outboxRunningRef.current = true;
+    let processedCount = 0;
+    const publishedDraftIds: string[] = [];
+    let blockedReason: 'offline' | 'unauthenticated' | 'invalid' | undefined;
 
     try {
-      const result = await flushBlogPublishOutbox({ userId: currentUserId });
+      do {
+        outboxRerunRef.current = false;
+        const result = await flushBlogPublishOutbox({ userId: currentUserId });
 
-      if (result.publishedDraftIds.length > 0) {
+        processedCount += result.processedCount;
+        publishedDraftIds.push(...result.publishedDraftIds);
+        blockedReason = result.blockedReason;
+      } while (outboxRerunRef.current);
+
+      if (publishedDraftIds.length > 0) {
         router.refresh();
       }
 
-      return result;
+      return {
+        ...(blockedReason ? { blockedReason } : {}),
+        processedCount,
+        publishedDraftIds,
+      };
     } finally {
       outboxRunningRef.current = false;
     }
