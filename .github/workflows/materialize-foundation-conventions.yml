@@ -52,9 +52,9 @@ jobs:
           test -f conventions.lock.json
           test -f .conventions/index.md
           mkdir -p .artifacts/foundation-conventions
-          cp conventions.json conventions.lock.json .artifacts/foundation-conventions/
-          cp -R .conventions .artifacts/foundation-conventions/.conventions
           cp /tmp/bootstrap.json .artifacts/foundation-conventions/bootstrap.json
+          tar -czf .artifacts/foundation-conventions/snapshot.tar.gz \
+            conventions.json conventions.lock.json .conventions
 
       - name: Upload generated convention snapshot
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
