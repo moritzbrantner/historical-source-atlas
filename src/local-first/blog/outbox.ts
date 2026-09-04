@@ -135,6 +135,27 @@ async function withPublishOutboxLock<T>(callback: () => Promise<T>) {
   return callback();
 }
 
+async function restoreJobAfterOfflineInterruption(job: BlogPublishJob) {
+  const db = getBlogLocalDb();
+  const now = new Date();
+
+  await db.transaction('rw', db.drafts, db.outbox, async () => {
+    await db.outbox.update(job.id, {
+      status: 'pending',
+      nextAttemptAt: now,
+      updatedAt: now,
+      lastError: null,
+      lastStatusCode: null,
+    });
+
+    await db.drafts.update(job.draftId, {
+      status: 'queued_publish',
+      updatedAt: now,
+      lastError: null,
+    });
+  });
+}
+
 async function updateJobFailure(input: {
   job: BlogPublishJob;
   errorMessage: string;
@@ -237,6 +258,14 @@ async function processBlogPublishJob(job: BlogPublishJob) {
       draftId: job.draftId,
     };
   } catch {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      await restoreJobAfterOfflineInterruption(job);
+      return {
+        ok: false as const,
+        blockedReason: 'offline' as const,
+      };
+    }
+
     await updateJobFailure({
       job,
       errorMessage:
