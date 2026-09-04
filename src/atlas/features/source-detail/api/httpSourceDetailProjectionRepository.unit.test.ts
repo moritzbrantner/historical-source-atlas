@@ -21,10 +21,7 @@ describe('HTTP source detail projection repository', () => {
     );
     vi.stubGlobal('fetch', fetchMock);
 
-    const result =
-      await httpSourceDetailProjectionRepository.getSourceDetailProjection(
-        'source a',
-      );
+    const result = await httpSourceDetailProjectionRepository.getSourceDetailProjection('source a');
 
     expect(fetchMock).toHaveBeenCalledWith(
       '/api/atlas/v2/sources/source%20a/projection',
