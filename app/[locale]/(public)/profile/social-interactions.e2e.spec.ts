@@ -271,6 +271,7 @@ test.describe('social interactions', () => {
     await expect(page.getByRole('status')).toContainText('Queued to publish');
 
     await page.context().setOffline(false);
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
     await expect(page.getByRole('status')).toContainText('Published');
     await expect(
       page.locator('article').filter({ hasText: postTitle }).first(),
