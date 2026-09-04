@@ -14,8 +14,8 @@ Object.assign(process.env, e2eEnvironment);
 
 export default defineConfig({
   tsconfig: './playwright.tsconfig.json',
-  globalSetup: './scripts/e2e/global-setup.cts',
-  globalTeardown: './scripts/e2e/global-teardown.cts',
+  globalSetup: './scripts/e2e/global-setup.ts',
+  globalTeardown: './scripts/e2e/global-teardown.ts',
   testDir: '.',
   testMatch: '**/*.e2e.spec.ts',
   timeout: 120_000,
