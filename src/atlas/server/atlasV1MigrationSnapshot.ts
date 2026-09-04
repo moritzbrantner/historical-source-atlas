@@ -86,6 +86,7 @@ export type V1ManuscriptUnitRow = {
   id: string;
   entityId: string;
   physicalObjectId: string;
+  objectPartId?: never;
 };
 
 export type V1InscriptionRow = {
