@@ -118,13 +118,8 @@ Agent rules:
 - Use `services:down` after dev sessions. Use `services:clean` only when deleting disposable test data is acceptable.
 - Format touched files only unless the task explicitly asks for a repo-wide format.
 
-## Agent Workflow
+## Domain Context
 
-This repository uses the coding-agent landscape and agent-loop planning workflow.
-
-- Issue tracker: `docs/agents/issue-tracker.md`
-- Triage labels: `docs/agents/triage-labels.md`
 - Domain context: `docs/agents/domain.md`
-- Planning workflow: `docs/agents/planning-workflow.md`
 
-Substantial future work should be represented by a GitHub PRD issue unless the user explicitly directs implementation. GitHub issue #4 is the parent PRD for the evidence-first v2 migration. Implementation slices must preserve its acceptance criteria and out-of-scope boundaries.
+GitHub issue #4 is the parent PRD for the evidence-first v2 migration. Implementation slices must preserve its acceptance criteria and out-of-scope boundaries.
