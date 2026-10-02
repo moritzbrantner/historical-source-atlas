@@ -13,11 +13,12 @@ describe('HTTP source detail projection repository', () => {
         ref: { space: 'documentary', kind: 'source', id: 'source a' },
       },
     };
-    const fetchMock = vi.fn(async () =>
-      new Response(JSON.stringify(payload), {
-        status: 200,
-        headers: { 'content-type': 'application/json' },
-      }),
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(JSON.stringify(payload), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
     );
     vi.stubGlobal('fetch', fetchMock);
 
