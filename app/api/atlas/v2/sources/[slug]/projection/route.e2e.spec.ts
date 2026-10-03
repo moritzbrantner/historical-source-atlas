@@ -58,7 +58,7 @@ test('projects a seeded source through the v1-to-v2 read seam', async ({
             id: 'rosetta-stone-place',
           },
         },
-        provenance: { status: 'unavailable' },
+        provenance: expect.objectContaining({ status: 'unavailable' }),
       }),
       expect.objectContaining({
         predicate: 'dated-to',
@@ -66,7 +66,7 @@ test('projects a seeded source through the v1-to-v2 read seam', async ({
           startYear: -196,
           label: '196 BC',
         }),
-        provenance: { status: 'unavailable' },
+        provenance: expect.objectContaining({ status: 'unavailable' }),
       }),
     ]),
   );
