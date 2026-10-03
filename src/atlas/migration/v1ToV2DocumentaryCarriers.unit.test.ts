@@ -115,5 +115,6 @@ function entity(
     preferredLabel,
     summary: null,
     description: null,
+    editorialStatus: 'published',
   };
 }

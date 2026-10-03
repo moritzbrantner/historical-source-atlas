@@ -7,6 +7,7 @@ export type V1EntityRow = {
   preferredLabel: string;
   summary: string | null;
   description: string | null;
+  editorialStatus: string;
 };
 
 export type V1CatalogRecordRow = {
@@ -232,7 +233,7 @@ export async function readAtlasV1MigrationSnapshotFromDb(): Promise<AtlasV1Migra
   ] = await Promise.all([
     pool.query<V1EntityRow>(`
       select id::text, type::text, slug, preferred_label as "preferredLabel",
-        summary, description
+        summary, description, editorial_status as "editorialStatus"
       from entities
       order by id::text
     `),
