@@ -164,6 +164,36 @@ describe('public v1 snapshot selection', () => {
     expect(serialized).not.toContain('Secret draft face');
     expect(serialized).not.toContain('draft-place');
   });
+  it('treats entities of unpublished catalog records as non-public', () => {
+    const snapshot = emptySnapshot({
+      entities: [
+        entity('entity-public', 'public-source'),
+        entity('entity-unlisted', 'unlisted-source'),
+      ],
+      catalogRecords: [
+        catalogRecord('record-public', 'entity-public', true),
+        catalogRecord('record-unlisted', 'entity-unlisted', false),
+      ],
+      entityRelations: [
+        {
+          id: 'relation-1',
+          subjectEntityId: 'entity-public',
+          predicate: 'related_to',
+          objectEntityId: 'entity-unlisted',
+          objectLabel: 'Unlisted source',
+          objectUrl: null,
+          certainty: null,
+          note: null,
+          bibliographicItemId: null,
+        },
+      ],
+    });
+
+    const selected = selectPublicAtlasV1Snapshot(snapshot);
+
+    expect(selected.entities.map((row) => row.id)).toEqual(['entity-public']);
+    expect(selected.entityRelations).toEqual([]);
+  });
 });
 
 function entity(

@@ -3,15 +3,29 @@ import type { AtlasV1MigrationSnapshot } from '../server/atlasV1MigrationSnapsho
 /**
  * Restricts a legacy v1 snapshot to publicly visible records before it is
  * adapted for unauthenticated read surfaces. Only entities with
- * `editorial_status = 'published'`, published catalog records, and public text
- * editions survive; every row owned by or referring to a removed entity,
- * record, edition, or text unit is removed with it.
+ * `editorial_status = 'published'` (and, for catalog entities, a published
+ * record), published catalog records, and public text editions survive; every
+ * row owned by or referring to a removed entity, record, edition, or text unit
+ * is removed with it.
  */
 export function selectPublicAtlasV1Snapshot(
   snapshot: AtlasV1MigrationSnapshot,
 ): AtlasV1MigrationSnapshot {
+  // An entity that carries catalog records is only public through a published
+  // record; otherwise relations and links could still disclose a draft source.
+  const catalogEntityIds = new Set(
+    snapshot.catalogRecords.map((record) => record.entityId),
+  );
+  const publishedCatalogEntityIds = new Set(
+    snapshot.catalogRecords
+      .filter((record) => record.published)
+      .map((record) => record.entityId),
+  );
   const entities = snapshot.entities.filter(
-    (entity) => entity.editorialStatus === 'published',
+    (entity) =>
+      entity.editorialStatus === 'published' &&
+      (!catalogEntityIds.has(entity.id) ||
+        publishedCatalogEntityIds.has(entity.id)),
   );
   const publicEntityIds = new Set(entities.map((entity) => entity.id));
   const ownedByPublicEntity = <Row extends { entityId: string }>(
