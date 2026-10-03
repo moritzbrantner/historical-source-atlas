@@ -2,20 +2,29 @@ import type { AtlasV1MigrationSnapshot } from '../server/atlasV1MigrationSnapsho
 
 /**
  * Restricts a legacy v1 snapshot to publicly visible records before it is
- * adapted for unauthenticated read surfaces: unpublished catalog records and
- * non-public text editions are removed together with the rows that hang off
- * them (catalog links, text units, annotations, and entity mentions).
+ * adapted for unauthenticated read surfaces. Only entities with
+ * `editorial_status = 'published'`, published catalog records, and public text
+ * editions survive; every row owned by or referring to a removed entity,
+ * record, edition, or text unit is removed with it.
  */
 export function selectPublicAtlasV1Snapshot(
   snapshot: AtlasV1MigrationSnapshot,
 ): AtlasV1MigrationSnapshot {
-  const catalogRecords = snapshot.catalogRecords.filter(
+  const entities = snapshot.entities.filter(
+    (entity) => entity.editorialStatus === 'published',
+  );
+  const publicEntityIds = new Set(entities.map((entity) => entity.id));
+  const ownedByPublicEntity = <Row extends { entityId: string }>(
+    rows: readonly Row[],
+  ) => rows.filter((row) => publicEntityIds.has(row.entityId));
+
+  const catalogRecords = ownedByPublicEntity(snapshot.catalogRecords).filter(
     (record) => record.published,
   );
   const publicCatalogRecordIds = new Set(
     catalogRecords.map((record) => record.id),
   );
-  const textEditions = snapshot.textEditions.filter(
+  const textEditions = ownedByPublicEntity(snapshot.textEditions).filter(
     (edition) => edition.isPublic,
   );
   const publicEditionIds = new Set(textEditions.map((edition) => edition.id));
@@ -25,18 +34,36 @@ export function selectPublicAtlasV1Snapshot(
   const publicUnitIds = new Set(textUnits.map((unit) => unit.id));
 
   return {
-    ...snapshot,
+    entities,
     catalogRecords,
-    catalogRecordLinks: snapshot.catalogRecordLinks.filter((link) =>
-      publicCatalogRecordIds.has(link.catalogRecordId),
+    catalogRecordLinks: snapshot.catalogRecordLinks.filter(
+      (link) =>
+        publicCatalogRecordIds.has(link.catalogRecordId) &&
+        publicEntityIds.has(link.entityId),
     ),
+    places: ownedByPublicEntity(snapshot.places),
+    events: ownedByPublicEntity(snapshot.events),
+    agents: ownedByPublicEntity(snapshot.agents),
+    physicalObjects: ownedByPublicEntity(snapshot.physicalObjects),
+    objectParts: ownedByPublicEntity(snapshot.objectParts),
+    manuscriptUnits: ownedByPublicEntity(snapshot.manuscriptUnits),
+    inscriptions: ownedByPublicEntity(snapshot.inscriptions),
+    textWorks: ownedByPublicEntity(snapshot.textWorks),
+    textWitnesses: ownedByPublicEntity(snapshot.textWitnesses),
     textEditions,
     textUnits,
     textAnnotations: snapshot.textAnnotations.filter((annotation) =>
       publicUnitIds.has(annotation.textUnitId),
     ),
-    entityMentions: snapshot.entityMentions.filter((mention) =>
-      publicUnitIds.has(mention.textUnitId),
+    entityMentions: ownedByPublicEntity(snapshot.entityMentions).filter(
+      (mention) => publicUnitIds.has(mention.textUnitId),
     ),
+    entityRelations: snapshot.entityRelations.filter(
+      (relation) =>
+        publicEntityIds.has(relation.subjectEntityId) &&
+        (relation.objectEntityId === null ||
+          publicEntityIds.has(relation.objectEntityId)),
+    ),
+    assets: ownedByPublicEntity(snapshot.assets),
   };
 }

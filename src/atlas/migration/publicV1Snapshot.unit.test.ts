@@ -53,6 +53,11 @@ describe('public v1 snapshot selection', () => {
 
   it('drops non-public editions with their units, annotations, and mentions', () => {
     const snapshot = emptySnapshot({
+      entities: [
+        entity('entity-public', 'public-source'),
+        entity('edition-public-entity', 'edition-public'),
+        entity('edition-private-entity', 'edition-private'),
+      ],
       textEditions: [
         edition('edition-public', true),
         edition('edition-private', false),
@@ -84,16 +89,97 @@ describe('public v1 snapshot selection', () => {
       'mention-public',
     ]);
   });
+  it('drops draft entities with their owned rows, links, and relations', () => {
+    const snapshot = emptySnapshot({
+      entities: [
+        entity('catalog-entity', 'source-a'),
+        entity('object-entity', 'object-a', 'published', 'physical_object'),
+        entity('part-entity', 'draft-part', 'draft', 'object_part'),
+        entity('place-entity', 'draft-place', 'draft', 'place'),
+      ],
+      catalogRecords: [catalogRecord('catalog-1', 'catalog-entity', true)],
+      catalogRecordLinks: [
+        {
+          catalogRecordId: 'catalog-1',
+          entityId: 'object-entity',
+          role: 'primary_physical_object',
+          sequence: 0,
+        },
+        {
+          catalogRecordId: 'catalog-1',
+          entityId: 'part-entity',
+          role: 'object_part',
+          sequence: 1,
+        },
+      ],
+      physicalObjects: [
+        { id: 'physical-1', entityId: 'object-entity', objectType: 'tablet' },
+      ],
+      objectParts: [
+        {
+          id: 'part-1',
+          entityId: 'part-entity',
+          physicalObjectId: 'physical-1',
+          parentPartId: null,
+          partType: 'face',
+          label: 'Secret draft face',
+          sequence: 0,
+        },
+      ],
+      entityRelations: [
+        {
+          id: 'relation-1',
+          subjectEntityId: 'catalog-entity',
+          predicate: 'found_at',
+          objectEntityId: 'place-entity',
+          objectLabel: null,
+          objectUrl: null,
+          certainty: null,
+          note: null,
+          bibliographicItemId: null,
+        },
+      ],
+    });
+
+    const selected = selectPublicAtlasV1Snapshot(snapshot);
+
+    expect(selected.entities.map((row) => row.id)).toEqual([
+      'catalog-entity',
+      'object-entity',
+    ]);
+    expect(selected.objectParts).toEqual([]);
+    expect(selected.entityRelations).toEqual([]);
+    expect(selected.catalogRecordLinks.map((link) => link.entityId)).toEqual([
+      'object-entity',
+    ]);
+
+    const model = adaptAtlasV1SnapshotStrictlyToV2(selected).model;
+    const projection = projectSourceDetail(
+      model,
+      documentaryRef('source', 'source-a'),
+    );
+    expect(projection).not.toBeNull();
+    const serialized = JSON.stringify(projection);
+    expect(serialized).not.toContain('draft-part');
+    expect(serialized).not.toContain('Secret draft face');
+    expect(serialized).not.toContain('draft-place');
+  });
 });
 
-function entity(id: string, slug: string) {
+function entity(
+  id: string,
+  slug: string,
+  editorialStatus = 'published',
+  type = 'catalog_record',
+) {
   return {
     id,
-    type: 'source',
+    type,
     slug,
     preferredLabel: slug,
     summary: null,
     description: null,
+    editorialStatus,
   };
 }
 
