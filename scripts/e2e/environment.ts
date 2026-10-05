@@ -11,11 +11,11 @@ const DEFAULT_E2E_BASE_URL = 'http://127.0.0.1:3006';
 const DEFAULT_MAILPIT_BASE_URL = 'http://127.0.0.1:8025';
 const DEFAULT_SMTP_HOST = '127.0.0.1';
 const DEFAULT_SMTP_PORT = '1025';
-const DEFAULT_MINIO_HOST = '127.0.0.1';
-const DEFAULT_MINIO_API_PORT = '9000';
-const DEFAULT_MINIO_CONSOLE_PORT = '9001';
-const DEFAULT_MINIO_ROOT_USER = 'minioadmin';
-const DEFAULT_MINIO_ROOT_PASSWORD = 'minioadmin';
+const DEFAULT_S3_HOST = '127.0.0.1';
+const DEFAULT_S3_API_PORT = '9000';
+const DEFAULT_S3_CONSOLE_PORT = '9001';
+const DEFAULT_S3_ROOT_USER = 'rustfsadmin';
+const DEFAULT_S3_ROOT_PASSWORD = 'rustfsadmin';
 const DEFAULT_PROFILE_IMAGE_STORAGE_BUCKET = 'profile-images';
 const DEFAULT_PROFILE_IMAGE_STORAGE_REGION = 'us-east-1';
 const PROJECT_PROFILE_IMAGE_STORAGE_PLACEHOLDERS: Record<string, string> = {
@@ -203,14 +203,14 @@ export function getE2EBaseURL() {
 export function createE2EEnvironment(baseURL = getE2EBaseURL()) {
   const exampleEnvironment = loadExampleEnvironment('.env.example');
   const e2eExampleEnvironment = loadExampleEnvironment('.env.e2e.example');
-  const minioApiPort = getE2EEnvironmentValue(
-    'MINIO_API_PORT',
+  const s3ApiPort = getE2EEnvironmentValue(
+    'S3_API_PORT',
     e2eExampleEnvironment,
     exampleEnvironment,
-    DEFAULT_MINIO_API_PORT,
+    DEFAULT_S3_API_PORT,
   );
   const storageBucket = getEnvironmentValue(
-    'MINIO_BUCKET',
+    'S3_BUCKET',
     e2eExampleEnvironment,
     getE2EEnvironmentValue(
       'PROFILE_IMAGE_STORAGE_BUCKET',
@@ -223,7 +223,7 @@ export function createE2EEnvironment(baseURL = getE2EBaseURL()) {
     'PROFILE_IMAGE_STORAGE_ENDPOINT',
     e2eExampleEnvironment,
     exampleEnvironment,
-    `http://${DEFAULT_MINIO_HOST}:${minioApiPort}`,
+    `http://${DEFAULT_S3_HOST}:${s3ApiPort}`,
   );
   const storagePublicBaseUrl = getE2EEnvironmentValue(
     'PROFILE_IMAGE_PUBLIC_BASE_URL',
@@ -231,17 +231,17 @@ export function createE2EEnvironment(baseURL = getE2EBaseURL()) {
     exampleEnvironment,
     `${storageEndpoint.replace(/\/$/u, '')}/${storageBucket}`,
   );
-  const minioRootUser = getE2EEnvironmentValue(
-    'MINIO_ROOT_USER',
+  const s3RootUser = getE2EEnvironmentValue(
+    'S3_ROOT_USER',
     e2eExampleEnvironment,
     exampleEnvironment,
-    DEFAULT_MINIO_ROOT_USER,
+    DEFAULT_S3_ROOT_USER,
   );
-  const minioRootPassword = getE2EEnvironmentValue(
-    'MINIO_ROOT_PASSWORD',
+  const s3RootPassword = getE2EEnvironmentValue(
+    'S3_ROOT_PASSWORD',
     e2eExampleEnvironment,
     exampleEnvironment,
-    DEFAULT_MINIO_ROOT_PASSWORD,
+    DEFAULT_S3_ROOT_PASSWORD,
   );
 
   return {
@@ -303,16 +303,16 @@ export function createE2EEnvironment(baseURL = getE2EBaseURL()) {
       'e2e-internal-cron-secret',
     ),
     POSTGRES_PORT: process.env.POSTGRES_PORT ?? getComposePostgresPort(),
-    MINIO_API_PORT: minioApiPort,
-    MINIO_CONSOLE_PORT: getE2EEnvironmentValue(
-      'MINIO_CONSOLE_PORT',
+    S3_API_PORT: s3ApiPort,
+    S3_CONSOLE_PORT: getE2EEnvironmentValue(
+      'S3_CONSOLE_PORT',
       e2eExampleEnvironment,
       exampleEnvironment,
-      DEFAULT_MINIO_CONSOLE_PORT,
+      DEFAULT_S3_CONSOLE_PORT,
     ),
-    MINIO_ROOT_USER: minioRootUser,
-    MINIO_ROOT_PASSWORD: minioRootPassword,
-    MINIO_BUCKET: storageBucket,
+    S3_ROOT_USER: s3RootUser,
+    S3_ROOT_PASSWORD: s3RootPassword,
+    S3_BUCKET: storageBucket,
     PROFILE_IMAGE_STORAGE_BUCKET: getE2EEnvironmentValue(
       'PROFILE_IMAGE_STORAGE_BUCKET',
       e2eExampleEnvironment,
@@ -330,13 +330,13 @@ export function createE2EEnvironment(baseURL = getE2EBaseURL()) {
       'PROFILE_IMAGE_STORAGE_ACCESS_KEY_ID',
       e2eExampleEnvironment,
       exampleEnvironment,
-      minioRootUser,
+      s3RootUser,
     ),
     PROFILE_IMAGE_STORAGE_SECRET_ACCESS_KEY: getE2EEnvironmentValue(
       'PROFILE_IMAGE_STORAGE_SECRET_ACCESS_KEY',
       e2eExampleEnvironment,
       exampleEnvironment,
-      minioRootPassword,
+      s3RootPassword,
     ),
     PROFILE_IMAGE_PUBLIC_BASE_URL: storagePublicBaseUrl,
     PROFILE_IMAGE_STORAGE_FORCE_PATH_STYLE: getE2EEnvironmentValue(
