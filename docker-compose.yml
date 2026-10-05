@@ -30,41 +30,45 @@ services:
       - '1025:1025' # SMTP
       - '8025:8025' # Web UI
 
-  minio:
-    image: minio/minio:latest
-    container_name: historical-source-atlas-minio
+  rustfs:
+    # S3-compatible object storage (MinIO drop-in). Pinned by tag and digest.
+    image: docker.io/rustfs/rustfs:1.0.1@sha256:1803faef57627e2d9c2e7d89d655d712ddded5389040054987163043fecb6a3c
+    container_name: historical-source-atlas-rustfs
     restart: unless-stopped
     environment:
-      MINIO_ROOT_USER: '${MINIO_ROOT_USER:-minioadmin}'
-      MINIO_ROOT_PASSWORD: '${MINIO_ROOT_PASSWORD:-minioadmin}'
-    command: server /data --console-address ":9001"
+      RUSTFS_ACCESS_KEY: '${S3_ROOT_USER:-rustfsadmin}'
+      RUSTFS_SECRET_KEY: '${S3_ROOT_PASSWORD:-rustfsadmin}'
+      RUSTFS_VOLUMES: /data
+      RUSTFS_CONSOLE_ENABLE: 'true'
     ports:
-      - '${MINIO_API_PORT:-9000}:9000' # S3 API
-      - '${MINIO_CONSOLE_PORT:-9001}:9001' # Web console
+      - '${S3_API_PORT:-9000}:9000' # S3 API
+      - '${S3_CONSOLE_PORT:-9001}:9001' # Web console
     volumes:
-      - minio_data:/data
+      - rustfs_data:/data
 
-  minio-create-bucket:
-    image: minio/mc:latest
+  rustfs-create-bucket:
+    image: docker.io/amazon/aws-cli:2.37.9@sha256:92de75724b6a746951f0e8b915d86bbccd7cb55aff96cd0cb4f7017272160780
     depends_on:
-      - minio
+      - rustfs
     restart: 'no'
     environment:
-      MINIO_ROOT_USER: '${MINIO_ROOT_USER:-minioadmin}'
-      MINIO_ROOT_PASSWORD: '${MINIO_ROOT_PASSWORD:-minioadmin}'
-      MINIO_BUCKET: '${MINIO_BUCKET:-profile-images}'
-    entrypoint: >
-      /bin/sh -c "
-      until mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD; do
-        sleep 1;
-      done;
-      mc mb --ignore-existing local/$$MINIO_BUCKET;
-      mc anonymous set download local/$$MINIO_BUCKET;
-      "
+      AWS_ACCESS_KEY_ID: '${S3_ROOT_USER:-rustfsadmin}'
+      AWS_SECRET_ACCESS_KEY: '${S3_ROOT_PASSWORD:-rustfsadmin}'
+      AWS_DEFAULT_REGION: us-east-1
+      AWS_ENDPOINT_URL: http://rustfs:9000
+      S3_BUCKET: '${S3_BUCKET:-profile-images}'
+    # Creates the bucket (idempotent) and grants anonymous read on its objects,
+    # matching what the app expects from PROFILE_IMAGE_PUBLIC_BASE_URL.
+    entrypoint: ['/bin/sh', '-ec']
+    command:
+      - |
+        until aws s3api list-buckets >/dev/null 2>&1; do sleep 1; done
+        aws s3api head-bucket --bucket "$$S3_BUCKET" 2>/dev/null || aws s3api create-bucket --bucket "$$S3_BUCKET"
+        aws s3api put-bucket-policy --bucket "$$S3_BUCKET" --policy "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":[\"*\"]},\"Action\":[\"s3:GetObject\"],\"Resource\":[\"arn:aws:s3:::$$S3_BUCKET/*\"]}]}"
 
 volumes:
   postgres_data:
-  minio_data:
+  rustfs_data:
 
 networks:
   default:
