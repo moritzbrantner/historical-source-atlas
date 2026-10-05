@@ -97,7 +97,7 @@ There is no root `release` or `publish` script. Package publishing is documented
 
 ## Docker And Cleanup
 
-This project uses Docker services for local development or tests: `postgres mailpit minio`.
+This project uses Docker services for local development or tests: `postgres mailpit rustfs`.
 
 Standard commands:
 

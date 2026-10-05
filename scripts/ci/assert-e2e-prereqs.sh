@@ -95,10 +95,10 @@ bun --eval '
       const endpoint = process.env.PROFILE_IMAGE_STORAGE_ENDPOINT.replace(/\/$/u, "");
       const response = await fetch(endpoint + "/minio/health/live");
       if (response.ok) return;
-      console.error("❌ MinIO returned HTTP " + response.status + ".");
+      console.error("❌ Object storage returned HTTP " + response.status + ".");
       process.exit(1);
     } catch (error) {
-      console.error("❌ Unable to reach MinIO using PROFILE_IMAGE_STORAGE_ENDPOINT.");
+      console.error("❌ Unable to reach object storage using PROFILE_IMAGE_STORAGE_ENDPOINT.");
       console.error(error instanceof Error ? error.message : error);
       process.exit(1);
     }
