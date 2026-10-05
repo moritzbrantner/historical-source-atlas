@@ -11,7 +11,7 @@ Copy `.env.example` to `.env` if you want to override defaults, then start the
 database and object storage:
 
 ```bash
-docker compose up -d postgres minio minio-create-buckets
+docker compose up -d postgres rustfs rustfs-create-bucket
 ```
 
 Or through the package script:
@@ -53,7 +53,7 @@ order by source_year;
 
 ## Storage
 
-MinIO is configured as S3-compatible storage. The schema stores object metadata
+RustFS is configured as S3-compatible storage. The schema stores object metadata
 only; application code should generate signed or public URLs.
 
 Default buckets:
