@@ -23,11 +23,11 @@ function clearE2EEnvironment() {
     'EMAIL_PROVIDER',
     'INTERNAL_CRON_SECRET',
     'MAILPIT_BASE_URL',
-    'MINIO_API_PORT',
-    'MINIO_BUCKET',
-    'MINIO_CONSOLE_PORT',
-    'MINIO_ROOT_PASSWORD',
-    'MINIO_ROOT_USER',
+    'S3_API_PORT',
+    'S3_BUCKET',
+    'S3_CONSOLE_PORT',
+    'S3_ROOT_PASSWORD',
+    'S3_ROOT_USER',
     'NEXTAUTH_URL',
     'POSTGRES_DB',
     'POSTGRES_PORT',
@@ -71,7 +71,7 @@ describe('e2e environment', () => {
     expect(environment.SMTP_USER).toBe('e2e');
     expect(environment.SMTP_PASSWORD).toBe('e2e');
     expect(environment.SMTP_SECURE).toBe('false');
-    expect(environment.MINIO_ROOT_USER).toBe('minioadmin');
+    expect(environment.S3_ROOT_USER).toBe('rustfsadmin');
     expect(environment.PROFILE_IMAGE_STORAGE_REGION).toBe('us-east-1');
   });
 
@@ -93,13 +93,13 @@ describe('e2e environment', () => {
   it('lets caller-provided e2e service endpoints override example defaults', () => {
     clearE2EEnvironment();
     process.env.MAILPIT_BASE_URL = 'http://127.0.0.1:18025';
-    process.env.MINIO_API_PORT = '19000';
+    process.env.S3_API_PORT = '19000';
     process.env.PROFILE_IMAGE_STORAGE_ENDPOINT = 'http://127.0.0.1:19000';
 
     const environment = createE2EEnvironment();
 
     expect(environment.MAILPIT_BASE_URL).toBe('http://127.0.0.1:18025');
-    expect(environment.MINIO_API_PORT).toBe('19000');
+    expect(environment.S3_API_PORT).toBe('19000');
     expect(environment.PROFILE_IMAGE_STORAGE_ENDPOINT).toBe(
       'http://127.0.0.1:19000',
     );
@@ -121,9 +121,9 @@ describe('e2e environment', () => {
     expect(environment.PROFILE_IMAGE_STORAGE_ENDPOINT).toBe(
       'http://127.0.0.1:9000',
     );
-    expect(environment.PROFILE_IMAGE_STORAGE_ACCESS_KEY_ID).toBe('minioadmin');
+    expect(environment.PROFILE_IMAGE_STORAGE_ACCESS_KEY_ID).toBe('rustfsadmin');
     expect(environment.PROFILE_IMAGE_STORAGE_SECRET_ACCESS_KEY).toBe(
-      'minioadmin',
+      'rustfsadmin',
     );
     expect(environment.PROFILE_IMAGE_PUBLIC_BASE_URL).toBe(
       'http://127.0.0.1:9000/profile-images',

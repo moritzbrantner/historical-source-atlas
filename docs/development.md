@@ -30,7 +30,7 @@ bun run dev
 For long-lived local services:
 
 ```bash
-docker compose up -d postgres mailpit minio minio-create-bucket
+docker compose up -d postgres mailpit rustfs rustfs-create-bucket
 bun run db:migrate
 bun run db:schema:generate
 bun run db:seed:test-users
