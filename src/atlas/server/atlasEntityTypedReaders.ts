@@ -77,17 +77,15 @@ export async function readAliases(entityId: string) {
     [entityId],
   );
 
-  return rows.map(
-    (row): EntityAlias => ({
-      id: row.id,
-      isPrimary: row.is_primary,
-      language: row.language,
-      name: row.name,
-      nameType: row.name_type,
-      script: row.script,
-      sourceNote: row.source_note,
-    }),
-  );
+  return rows.map((row): EntityAlias => ({
+    id: row.id,
+    isPrimary: row.is_primary,
+    language: row.language,
+    name: row.name,
+    nameType: row.name_type,
+    script: row.script,
+    sourceNote: row.source_note,
+  }));
 }
 
 export async function readTypedEntity(
