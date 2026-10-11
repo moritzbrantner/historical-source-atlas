@@ -1,3 +1,10 @@
 {
-  "extends": ["github>moritzbrantner/coding-agent-conventions"]
+  "extends": ["github>moritzbrantner/coding-agent-conventions"],
+  "packageRules": [
+    {
+      "description": "Remotion refuses to run with mixed versions; move remotion and @remotion/* together.",
+      "matchPackageNames": ["remotion", "@remotion/**"],
+      "groupName": "remotion"
+    }
+  ]
 }
