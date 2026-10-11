@@ -188,17 +188,15 @@ async function readEvidenceUnits(catalogRecordId: string) {
 
   return unitRows
     .filter((unit) => unit.content?.trim())
-    .map(
-      (unit): EvidenceTextUnit => ({
-        content: unit.content ?? '',
-        id: unit.id,
-        label: unit.label,
-        note: unit.note,
-        overlays: overlaysByUnit.get(unit.id) ?? [],
-        sequence: unit.sequence,
-        unitType: unit.unit_type,
-      }),
-    );
+    .map((unit): EvidenceTextUnit => ({
+      content: unit.content ?? '',
+      id: unit.id,
+      label: unit.label,
+      note: unit.note,
+      overlays: overlaysByUnit.get(unit.id) ?? [],
+      sequence: unit.sequence,
+      unitType: unit.unit_type,
+    }));
 }
 
 async function readTextAnnotations(unitIds: string[]) {
