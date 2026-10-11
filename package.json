@@ -117,7 +117,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/three": "^0.184.1",
     "@unlighthouse/cli": "^0.17.9",
-    "@vitest/browser-playwright": "4.1.7",
+    "@vitest/browser-playwright": "4.1.11",
     "drizzle-kit": "^0.31.10",
     "jsdom": "^29.1.1",
     "oxfmt": "^0.51.0",
@@ -127,7 +127,7 @@
     "tsx": "^4.22.3",
     "typescript": "^6.0.3",
     "vite": "^8.0.13",
-    "vitest": "4.1.7"
+    "vitest": "4.1.11"
   },
   "packageManager": "bun@1.4.2"
 }
