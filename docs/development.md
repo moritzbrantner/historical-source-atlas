@@ -32,8 +32,10 @@ For long-lived local services:
 ```bash
 docker compose up -d postgres mailpit rustfs rustfs-create-bucket
 bun run db:migrate
+bun run db:atlas:migrate
 bun run db:schema:generate
 bun run db:seed:test-users
+bun run db:atlas:seed
 bun run dev:app
 ```
 

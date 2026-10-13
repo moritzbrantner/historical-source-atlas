@@ -43,14 +43,17 @@ them. Add the public image host to `IMAGE_REMOTE_HOSTS`.
 
 ## Database Migrations
 
-Run migrations before deploying app instances:
+Run both the platform (Drizzle) migrations and the separate Atlas SQL migrations **before** deploying full-stack app instances:
 
 ```bash
 bun run db:migrate
+bun run db:atlas:migrate
 bun run db:schema:generate
 ```
 
-Use `bun run db:check` in CI to catch schema drift.
+`db:atlas:migrate` creates the Atlas tables and read models (including `atlas_source_cards`) that `/api/atlas/*` queries require. It skips if the `atlas_source_cards` view already exists; review subsequent schema changes separately rather than treating this command as a general incremental migrator. `bun run db:check` validates Drizzle migration consistency in CI but does not replace the Atlas migration step.
+
+A new full-stack database also needs Atlas **source records**, supplied by a reviewed, deployment-specific import or curation process. `bun run db:atlas:seed` loads the repository's bundled static and evidence-review examples; it is **not an automatic production deployment step**. Run it only for an intentionally fixture-backed environment, and never automatically against curated production records: the current seed recreates some seeded entities by slug and can overwrite their existing associations.
 
 ## Backup And Restore
 

@@ -50,6 +50,25 @@ describe('historical atlas documentation', () => {
     ).toBe(true);
   });
 
+  it('documents both migrations without prescribing fixture seeds in production', () => {
+    const scripts = (
+      JSON.parse(readDoc('package.json')) as {
+        scripts: Record<string, string>;
+      }
+    ).scripts;
+    expect(scripts['db:migrate']).toBeDefined();
+    expect(scripts['db:atlas:migrate']).toBeDefined();
+    expect(scripts['db:atlas:seed']).toBeDefined();
+
+    const production = readDoc('docs/production-readiness.md');
+    const development = readDoc('docs/development.md');
+    expect(production).toContain('bun run db:migrate');
+    expect(production).toContain('bun run db:atlas:migrate');
+    expect(production).toContain('not an automatic production deployment step');
+    expect(development).toContain('bun run db:atlas:migrate');
+    expect(development).toContain('bun run db:atlas:seed');
+  });
+
   it('keeps the agent pointer and removes superseded template docs', () => {
     expect(readDoc('CLAUDE.md')).toBe('@AGENTS.md\n');
     for (const filePath of [
