@@ -36,7 +36,7 @@ V1 and v2 coexist during migration. Add v2 modules beside v1 and translate throu
 
 ## Commands
 
-Use Bun `1.4.0`, matching `packageManager` and the current landscape foundation.
+Use Bun `1.4.2`, matching `packageManager` and the current CI setup.
 
 ```bash
 bun install --frozen-lockfile

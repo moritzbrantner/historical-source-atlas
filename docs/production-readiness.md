@@ -1,8 +1,6 @@
 # Production Readiness
 
-This scaffold is suitable as an internal full-stack starter. For production
-SaaS use, treat the checklist below as the minimum hardening baseline before
-launch.
+Historical Source Atlas runs a Next.js application with inherited account and administration services. This is an operational foundation checklist, not evidence that the v2 historical model or atlas rollout is complete.
 
 ## Required Environment
 
@@ -85,3 +83,9 @@ process controls.
 - Use HTTPS, secure cookies, and production security headers.
 - Validate mutating authenticated requests with same-origin `Origin` or
   `Referer` headers.
+
+## Historical profile-image object-storage migration
+
+The `next-template` account-image guide recorded the move from inline `User.image` data URLs to S3-compatible keys such as `profile-images/<userId>/<timestamp>-<uuid>.png`. Current profile uploads write the object, then store its key; failed DB updates clean up new objects and replacements remove old objects.
+
+For pre-existing `data:` records, first back up and inspect actual data, validate decoded bytes, upload to object storage, update the key only after upload succeeds, and verify rendering. Preserve objects for any rollback until the restored DB/application is compatible. **This is historical migration guidance, not proof that a backfill ran in an atlas deployment.** See [migration notes](../MIGRATION_NOTES.md).

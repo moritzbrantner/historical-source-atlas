@@ -2,7 +2,7 @@
 
 ## Setup
 
-Install Bun `1.3.14`, then install dependencies:
+Install Bun `1.4.2` (see `package.json#packageManager`), then install dependencies:
 
 ```bash
 bun install --frozen-lockfile
@@ -58,7 +58,7 @@ bun run verify
 
 - `bun run test`: fastest meaningful test pass, currently unit tests.
 - `bun run format:check`: non-mutating `oxfmt` check.
-- `bun run lint`: existing project lint command, also `oxfmt --check .`.
+- `bun run lint`: runs Oxlint; `bun run format:check` runs Oxfmt separately.
 - `bun run storybook:build`: static Storybook build for atlas UI stories.
 - `bun run test:storybook`: Storybook Vitest browser smoke and interaction tests.
 - `bun run build`: package build plus production Next build.

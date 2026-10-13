@@ -1,6 +1,8 @@
 # Historical Source Atlas Data Model
 
-The database schema lives in [`db/migrations/001_initial_schema.sql`](../db/migrations/001_initial_schema.sql).
+**Scope:** This guide covers **v1 SQL and compatibility read models**, not the normative evidence-first v2 ontology. For v2 use [DEC-0004](../DECISIONS.md), [CONTEXT.md](../CONTEXT.md), [domain guidance](agents/domain.md), and [PRD #4](https://github.com/moritzbrantner/historical-source-atlas/issues/4).
+
+The database schema lives in [`db/atlas/migrations/001_initial_schema.sql`](../db/atlas/migrations/001_initial_schema.sql).
 It implements the scholarly-core model for catalogue records, physical objects,
 manuscripts, inscriptions, text works, witnesses, editions, media assets, places,
 events, agents, bibliography, identifiers, and entity relationships.
@@ -26,12 +28,12 @@ Apply the schema:
 docker compose exec -T postgres psql \
   -U atlas \
   -d historical_source_atlas \
-  < db/migrations/001_initial_schema.sql
+  < db/atlas/migrations/001_initial_schema.sql
 
 docker compose exec -T postgres psql \
   -U atlas \
   -d historical_source_atlas \
-  < db/migrations/002_referenced_entities.sql
+  < db/atlas/migrations/002_referenced_entities.sql
 ```
 
 Load the current static atlas records:
@@ -40,7 +42,7 @@ Load the current static atlas records:
 docker compose exec -T postgres psql \
   -U atlas \
   -d historical_source_atlas \
-  < db/seeds/001_current_static_sources.sql
+  < db/atlas/seeds/001_current_static_sources.sql
 ```
 
 Query the read model used by the React atlas:
@@ -64,10 +66,10 @@ Default buckets:
 
 ## Frontend Contract
 
-[`src/domain/dataModel.ts`](../src/domain/dataModel.ts) defines the TypeScript
+[`src/atlas/domain/dataModel.ts`](../src/atlas/domain/dataModel.ts) defines the TypeScript
 contract for the database-backed API, including `AtlasSourceCard`.
 
-[`src/domain/atlasReadModel.ts`](../src/domain/atlasReadModel.ts) maps the
+[`src/atlas/domain/atlasReadModel.ts`](../src/atlas/domain/atlasReadModel.ts) maps the
 current static `historicalSources` into that read model. This keeps the existing
 frontend stable while the backend API is introduced.
 
@@ -86,7 +88,7 @@ Initial API endpoints should return these shapes:
 
 ## Referenced Entities
 
-[`db/migrations/002_referenced_entities.sql`](../db/migrations/002_referenced_entities.sql)
+[`db/atlas/migrations/002_referenced_entities.sql`](../db/atlas/migrations/002_referenced_entities.sql)
 adds the contract for people, cities, borders, events, and other referenced
 objects that appear inside source text. It keeps the existing `entities` table
 as the shared identity layer:

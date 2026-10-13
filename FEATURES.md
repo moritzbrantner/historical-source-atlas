@@ -1,51 +1,31 @@
-# FEATURES.md
+# Historical Source Atlas — Feature inventory
 
-## Core platform features
+This inventories the **atlas product**, not the inherited Next.js scaffold. Status is grounded in existing source and tests.
 
-### User management
+## Available — v1 atlas UI
 
-- **Status:** done
-- **Summary:** Credential login, self-serve signup, email verification, password reset, session handling, account email change, account deletion, and profile updates are implemented.
-- **Acceptance criteria:**
-  - [x] Registration persists a user and issues a verification token.
-  - [x] Verification and password reset flows consume stored tokens.
-  - [x] Login creates an app session with role-aware user data.
-  - [x] Profile display name and profile image updates persist and refresh session state.
-  - [x] Account email change and account deletion validate current password.
+- **Source browsing:** map, timeline, filters, and source list under `src/atlas/features/atlas/` and `app/[locale]/atlas/`.
+- **Source research:** details, locations, comparisons, related sources, and reference networks in `src/atlas/features/source-detail/`.
+- **Historical-entity context:** entity pages, mentions, relations, and map overlays in `src/atlas/features/entity-detail/` and `src/atlas/entities/entity-overlay/`.
+- **Evidence review:** text and manuscript-image views with selectable evidence layers in `src/atlas/features/evidence-review/`.
+- **Personal organization:** source collections and tags in `src/atlas/entities/collections/` and `src/atlas/entities/source-tags/`.
+- **Delivery:** Next.js HTTP/DB source repositories and bundled static-data mode for GitHub Pages.
 
-### Authorization and admin access
+These screens retain **v1 compatibility vocabulary**, not a completed evidence-first UI.
 
-- **Status:** done
-- **Summary:** Role-aware helpers, admin/workspace navigation, and protected admin APIs are implemented.
-- **Acceptance criteria:**
-  - [x] Role helpers cover workspace/admin/report permissions.
-  - [x] Admin routes enforce authentication and role checks.
-  - [x] Authorization reporting endpoint exposes rate-limited permission state.
+## Implemented foundations — v2, not fully integrated
 
-### API hardening
+- `src/atlas/domain/v2/`: domain kernel, explicit provenance, qualified assertions, and conflicting evidence.
+- `src/atlas/domain/v2/projections/`: deterministic source/entity, map, timeline, search, and evidence-review projectors.
+- `src/atlas/migration/`: v1-to-v2 compatibility adapters with diagnostics.
+- `app/api/atlas/v2/sources/[slug]/projection/route.ts`: initial database-backed source projection endpoint.
 
-- **Status:** done
-- **Summary:** Shared rate limiting and audit logging protect public and privileged HTTP endpoints. Problem reports now persist to Postgres and are triaged from the admin workspace.
-- **Acceptance criteria:**
-  - [x] Shared security helper handles rate limits and audit outcomes.
-  - [x] Auth, account, profile, newsletter, report, data-entry, and admin mutation endpoints use the helper.
-  - [x] Audit metadata is sanitized before persistence.
-  - [x] Problem-report submissions return stable references and remain reviewable by admins.
+## Open migration work
 
-### Example accelerators
+- Switch UI surfaces to v2 projections incrementally ([issue #12](https://github.com/moritzbrantner/historical-source-atlas/issues/12)).
+- Retire overloaded v1 model only after consumers move ([issue #13](https://github.com/moritzbrantner/historical-source-atlas/issues/13)).
+- General-purpose symmetric historical graph remains deferred by [DEC-0004](DECISIONS.md).
 
-- **Status:** done
-- **Summary:** Example routes demonstrate forms, communication, uploads, and mock REST data under an explicit `/examples/*` namespace.
-- **Acceptance criteria:**
-  - [x] Example pages are clearly separated from the core app surface.
-  - [x] Example REST data is served from `/api/examples/*`.
-  - [x] Home and navigation entry points label these routes as examples.
+## Supporting platform features
 
-### Localization
-
-- **Status:** done
-- **Summary:** The scaffold supports English, German, French, and Spanish routing with explicit message catalogs and localized repo-managed MDX content.
-- **Acceptance criteria:**
-  - [x] Locale catalogs are shape-checked across all supported locales.
-  - [x] Showcase app-pack messages cover each public page namespace.
-  - [x] Blog, changelog, and page content roots contain MDX for each supported locale.
+Authentication, profiles, administration, localization, notifications, and `apps/showcase` examples exist in the inherited Next.js foundation. They are **not** atlas product features to count as domain implementation progress. See [architecture](ARCHITECTURE.md) and [platform layout](docs/platform-layout.md).
