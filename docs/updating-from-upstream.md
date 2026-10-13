@@ -1,6 +1,6 @@
-# Updating the Scaffold
+# Updating the inherited Next.js foundation
 
-This repo no longer assumes subtree sync or upstream folder merges.
+This repo no longer assumes subtree sync or upstream folder merges. As a downstream research product, Historical Source Atlas must preserve `src/atlas/`, `db/atlas/`, and the domain decisions in `DECISIONS.md` during upstream changes.
 
 ## Update order
 

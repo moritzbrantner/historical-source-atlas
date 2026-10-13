@@ -1,39 +1,27 @@
-# PRODUCT_BRIEF.md
+# Historical Source Atlas — Product brief
 
-## Product statement
+## Purpose
 
-Reusable Next.js 16 App Router platform template for teams that need a production-shaped web platform with localized routing, account lifecycle flows, admin/workspace patterns, uploads, and extensible app packs.
+Historical Source Atlas is a Next.js application for researching documentary sources, their locations and dates, references, and evidence for reconstructed historical context. Its value is source-centric exploration and traceable interpretation, **not** providing a reusable Next.js platform template.
 
-## Audience
+## Audience and tasks
 
-- Teams starting a new authenticated web app on Next.js App Router
-- Agencies that need a production-ready starter instead of a blank boilerplate
-- Internal platform teams standardizing auth, data, UI primitives, and app-pack seams
+- Researchers locating manuscripts, inscriptions, artifacts, and textual sources in geographic and chronological context.
+- Readers following source references, comparisons, transcriptions, and manuscript images.
+- Curators investigating provenance, uncertainty, and contradictory historical claims about people, places, events, and objects.
 
-## Problems solved
+## Current application
 
-- Avoids rebuilding auth, profile, email, admin scaffolding, and operational settings from scratch
-- Gives teams a documented domain-first `src/` architecture instead of ad hoc folder growth
-- Ships runnable showcase examples without mixing them into the core platform surface
-- Separates internal workspace packages from app-pack customization seams
+The shipped v1 atlas includes map/timeline browsing, filters, source and entity detail, related references, evidence review, collections, and personal tags. Next.js API repositories supply the full-stack build, while bundled static records support GitHub Pages.
 
-## Value proposition
+The account, administration, content, localization, and showcase modules inherited from `next-template` are supporting infrastructure, not atlas product completion criteria.
 
-- Next.js App Router runtime with realistic persistence, testing, and CI expectations
-- Clear separation between the root deployable app, internal workspace packages, and app-pack manifests
-- Built-in account lifecycle, profile workflows, localized navigation, and API hardening patterns
+## Target architecture
+
+Historical model v2 separates documentary sources/parts, textual works/witnesses/editions, historical entities, observations/assertions/provenance, and digital assets. Historically contestable relationships preserve certainty, time, source support, and disagreement; deterministic projections feed UI and search.
+
+V2 kernel, projections, and migration seam exist. UI cutover and v1 retirement remain incomplete. See [DEC-0004](DECISIONS.md), [CONTEXT.md](CONTEXT.md), and [PRD #4](https://github.com/moritzbrantner/historical-source-atlas/issues/4).
 
 ## Scope guardrails
 
-### In scope
-
-- Next.js App Router shell and route conventions
-- Credential auth, registration, email verification, password reset, and account management
-- Profile, newsletter, reporting, uploads, workspace/admin starter modules, and showcase examples
-- App-pack extension through `AppManifest`
-
-### Out of scope
-
-- Domain-specific business logic beyond the starter modules
-- Turnkey production infrastructure provisioning
-- Multiple competing runtime architectures in one generated project
+Preserve v1 behavior during incremental migration; keep historical claims grounded in evidence; do not silently canonicalize conflicting assertions; and do not introduce a generic symmetric graph interface without a separate decision.

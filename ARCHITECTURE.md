@@ -1,71 +1,37 @@
-# ARCHITECTURE.md
+# Historical Source Atlas — Architecture
 
-## Canonical runtime
+## Product and runtime
 
-This repository ships a Next.js 16 App Router application at the repo root. `app/` is the only canonical runtime entrypoint for pages and route handlers, while `app.manifest.ts` describes the standalone repository metadata used by scaffold tooling.
+Historical Source Atlas is a Next.js 16 App Router research application, not a reusable platform template. It owns historical-source discovery and evidence interpretation; the inherited foundation supplies authentication, administration, localization, content, and account utilities.
 
-## Canonical structure
+- `app/page.tsx` redirects to the default-locale atlas page; `app/[locale]/atlas/**` contains the canonical localized atlas routes.
+- `app/sources/[slug]/**` are compatibility redirects, not canonical detail pages.
+- `app/api/atlas/**` owns HTTP contracts for atlas sources, entities, evidence, collections, tags, and v2 projections.
+- `app.manifest.ts` is standalone scaffold metadata; `app.config.ts` selects the inherited `apps/showcase/manifest.ts`. Neither defines historical ontology.
+- `src/atlas/**` owns atlas domain, feature UI, repositories, and migration; `src/domain/**` and `src/db/**` retain platform use cases and database infrastructure.
+
+## Domain and evidence boundary
+
+The functional v1 atlas still uses `EntityType`, `RecordKind`, taxonomy helpers, and compatibility storage. These are **not** the target historical ontology.
+
+- `src/atlas/domain/v2/**` owns documentary, textual, historical, evidence/assertion/provenance, and digital-asset records, plus a kernel that validates references without collapsing disagreements.
+- `src/atlas/domain/v2/projections/**` provides deterministic source/entity detail, map, timeline, search, and evidence-review read models.
+- `src/atlas/migration/**` translates v1 snapshots into v2 through explicit adapters and diagnostics, rather than inventing missing historical evidence.
+- `src/atlas/server/**` owns database and projection adapters. `db/atlas/**` owns v1 atlas SQL migrations and seeds, separate from inherited Drizzle schema.
 
 ```text
-app.manifest.ts          Standalone repo/app metadata for scaffold tooling
-app/                     Next.js App Router pages, layouts, route handlers
-apps/showcase/           App-pack manifest, content, messages, examples, tests
-components/              Shared app-facing React components
-docs/                    Platform repo contributor documentation
-emails/                  React Email source
-i18n/                    Routing and navigation adapters
-messages/                Foundation localization dictionaries
-packages/
-  app-pack/              Public app-pack contracts and route helpers
-  app-pack-react/        Public React helpers exposed to app packs
-src/
-  admin/                 Admin page composition helpers
-  analytics/             Analytics use-cases and adapters
-  api/                   Cross-route security and API helpers
-  app-config/            App-pack contracts and manifest loading
-  auth/                  Auth and account lifecycle services
-  content/               MDX/content indexing
-  db/                    Database schema and client
-  domain/                Business use-cases
-  dynamic-db/            Admin data-studio helpers
-  email/                 Outbound email delivery/templates
-  foundation/            Shared platform features exposed to app packs
-  navigation/            App navigation metadata
-  observability/         Logging and health helpers
-  site-config/           Site settings, flags, announcements, analytics config
+source -> observation/annotation -> assertion + provenance
+       -> historical graph -> deterministic projection -> UI
 ```
 
-## Runtime boundaries
+The v2 kernel, projections, adapters, and initial DB-backed v2 source-projection API exist. Main atlas UI screens **still primarily consume v1** and the v2 UI cutover remains open. Consult [DEC-0004](DECISIONS.md), [domain context](CONTEXT.md), [domain guidance](docs/agents/domain.md), and [PRD #4](https://github.com/moritzbrantner/historical-source-atlas/issues/4) before changing historical modelling.
 
-- Route handlers and pages live in `app/**`.
-- `app.manifest.ts` describes standalone repo metadata such as package identity, entry workspace, deployment runtime, and shared package dependencies.
-- App-pack extension data lives behind `AppManifest` in `apps/**`.
-- Domain rules live in `src/domain/**`.
-- Database access lives in `src/db/**`.
-- Cross-cutting HTTP protections live in `src/api/**`.
-- Local workspace package public APIs are `@moritzbrantner/app-pack` and `@moritzbrantner/app-pack-react`.
-- Shared runtime package public APIs come from npm, starting with `@moritzbrantner/ui` and `@moritzbrantner/ui/styles.css`.
+## UI, delivery, and tooling
 
-## Import rules
+- `src/atlas/features/**` owns atlas screens; `src/atlas/entities/**` owns client-facing repositories and query seams. Screens consume read models, not arbitrary truth selections from storage.
+- `src/atlas/entities/source/api/clientSourceRepository.ts` selects HTTP/DB or bundled static data via `NEXT_PUBLIC_ATLAS_DATA_MODE`. GitHub Pages uses static data because a static export has no Next.js API.
+- `components/` and `@moritzbrantner/ui` provide shared UI; keep atlas-specific behavior under `src/atlas/`.
+- `i18n/` and `messages/` support localized routes. `apps/showcase/` and `packages/app-pack*/` remain supporting platform seams, not the atlas product.
+- `.coding-tooling.json` declares the fast shared validation profile; DB, integration, Storybook, Pages, production build, and Playwright checks remain repository-specific.
 
-- Use canonical aliases only: `@/src/*`, `@/components/*`, `@/lib/*`, `@/i18n/*`, `@/messages/*`, `@/emails/*`, `@/scripts/*`.
-- Prefer components from `@moritzbrantner/ui` for shared UI surfaces and controls. Add local components only for app-specific behavior or composition that the package does not provide.
-- Do not introduce `features/`, `stores/`, or `lib/services/` namespaces.
-- `src/domain/**` must not import app or component layer modules directly.
-- `src/db/**` stays infrastructure-only.
-- Foundation-owned code must not import `apps/**` directly except through the manifest loader seam.
-
-## Test and Story Placement
-
-- Unit tests live beside the source they exercise as `*.unit.test.ts` or `*.unit.test.tsx`.
-- Integration tests live beside the source or route boundary they exercise as `*.integration.test.ts` or `*.integration.test.tsx`.
-- E2E tests live beside the page, component, or workflow entrypoint they exercise as `*.e2e.spec.ts`.
-- Storybook stories live beside the component they document as `*.stories.tsx` or `*.stories.mdx`.
-
-## Platform direction
-
-- Keep the deployable Next.js app at the repo root for now.
-- Keep `app.manifest.ts` as the standalone repo/app metadata contract.
-- Treat `AppManifest` as the public app-pack extension seam in phase 1.
-- Keep `packages/app-pack` and `packages/app-pack-react` local until cross-repo reuse is proven.
-- Consume long-lived shared runtime code from published npm packages instead of keeping duplicate local workspace packages.
+Maintain v1/v2 compatibility during migration. Defer a general-purpose graph API. See [development](docs/development.md) and [platform layout](docs/platform-layout.md).

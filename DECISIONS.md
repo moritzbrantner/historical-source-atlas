@@ -117,3 +117,29 @@ The private-registry Renovate migration remains blocked until issue #3 proves ho
 - Fast validation emits the shared machine-readable report and execution receipt used by the coding-agent landscape.
 - Repository-specific expensive checks remain local and can evolve independently.
 - Tooling and domain migration are separated, reducing the risk that infrastructure failures are mistaken for ontology failures.
+
+## DEC-0006: The atlas defines the product; the scaffold is infrastructure
+
+- **Date:** 2026-10-13
+- **Status:** accepted (backfill of existing AGENTS.md and PRD issue #4)
+
+### Context
+
+Inherited `next-template` descriptions portrayed this repository as a generic platform despite its long-established atlas purpose, dedicated `src/atlas/` architecture, and evidence-first PRD.
+
+### Decision
+
+Historical Source Atlas owns product scope and domain interpretation. The Next.js foundation, app-pack contracts, accounts, and admin services are supporting implementation, not the ontology or product. DEC-0004 remains authoritative for source-first v2, preserving v1 compatibility, and deferring a generic graph. This entry documents the existing boundary without changing runtime behavior.
+
+### Consequences
+
+- Product brief, features, and architecture describe the actual atlas rather than the reusable scaffold's intended audience.
+- Foundation provenance and previous migration history remain in `MIGRATION_NOTES.md`; existing DEC-0001 through DEC-0005 are retained verbatim.
+- Template updates must not silently override atlas domain decisions.
+
+## Q-0001: What happens to the inherited public showcase?
+
+- **Status:** open
+- **Context:** `app.config.ts` still selects `apps/showcase`, and root/showcase manifests contain `next-template` product identifiers.
+- **Question:** Retain, separate, or retire/rebrand this public example surface after reviewing its actual consumers and contracts?
+- **Boundary:** No manifest, route, UI, or runtime-contract test changes are authorized by this docs-only audit.

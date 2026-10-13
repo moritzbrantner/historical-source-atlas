@@ -1,8 +1,6 @@
 # Production Readiness
 
-This scaffold is suitable as an internal full-stack starter. For production
-SaaS use, treat the checklist below as the minimum hardening baseline before
-launch.
+Historical Source Atlas runs a Next.js application with inherited account and administration services. This is an operational foundation checklist, not evidence that the v2 historical model or atlas rollout is complete.
 
 ## Required Environment
 
@@ -45,14 +43,17 @@ them. Add the public image host to `IMAGE_REMOTE_HOSTS`.
 
 ## Database Migrations
 
-Run migrations before deploying app instances:
+Run both the platform (Drizzle) migrations and the separate Atlas SQL migrations **before** deploying full-stack app instances:
 
 ```bash
 bun run db:migrate
+bun run db:atlas:migrate
 bun run db:schema:generate
 ```
 
-Use `bun run db:check` in CI to catch schema drift.
+`db:atlas:migrate` creates the Atlas tables and read models (including `atlas_source_cards`) that `/api/atlas/*` queries require. It skips if the `atlas_source_cards` view already exists; review subsequent schema changes separately rather than treating this command as a general incremental migrator. `bun run db:check` validates Drizzle migration consistency in CI but does not replace the Atlas migration step.
+
+A new full-stack database also needs Atlas **source records**, supplied by a reviewed, deployment-specific import or curation process. `bun run db:atlas:seed` loads the repository's bundled static and evidence-review examples; it is **not an automatic production deployment step**. Run it only for an intentionally fixture-backed environment, and never automatically against curated production records: the current seed recreates some seeded entities by slug and can overwrite their existing associations.
 
 ## Backup And Restore
 
@@ -85,3 +86,9 @@ process controls.
 - Use HTTPS, secure cookies, and production security headers.
 - Validate mutating authenticated requests with same-origin `Origin` or
   `Referer` headers.
+
+## Historical profile-image object-storage migration
+
+The `next-template` account-image guide recorded the move from inline `User.image` data URLs to S3-compatible keys such as `profile-images/<userId>/<timestamp>-<uuid>.png`. Current profile uploads write the object, then store its key; failed DB updates clean up new objects and replacements remove old objects.
+
+For pre-existing `data:` records, first back up and inspect actual data, validate decoded bytes, upload to object storage, update the key only after upload succeeds, and verify rendering. Preserve objects for any rollback until the restored DB/application is compatible. **This is historical migration guidance, not proof that a backfill ran in an atlas deployment.** See [migration notes](../MIGRATION_NOTES.md).
