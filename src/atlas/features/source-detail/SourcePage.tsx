@@ -146,7 +146,7 @@ export function SourcePage({
             className="grid gap-4"
             aria-label={`${source.label} map and related sources`}
           >
-            <SourceLocationMap source={source} />
+            <SourceLocationMap key={source.id} source={source} />
             <RelatedSources
               source={source}
               sources={sources}
