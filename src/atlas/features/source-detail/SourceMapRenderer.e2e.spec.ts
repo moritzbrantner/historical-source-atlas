@@ -223,13 +223,35 @@ async function exerciseSourceMap(
       hasTouch: navigator.maxTouchPoints > 0,
       hasWebGPU: 'gpu' in navigator,
     })).catch(() => null);
+    const canvas = page.locator('canvas[data-flat-runtime="maps"]');
     const baseRenderer =
       backend === 'maps'
-        ? await page
-            .locator('canvas[data-flat-runtime="maps"]')
-            .getAttribute('data-map-base-renderer')
-            .catch(() => null)
+        ? await canvas.getAttribute('data-map-base-renderer').catch(() => null)
         : 'maplibre';
+    const tileObservations =
+      backend === 'maps'
+        ? {
+            completed: await canvas.getAttribute('data-map-base-tiles').catch(() => null),
+            pending: await canvas
+              .getAttribute('data-map-base-pending-tiles')
+              .catch(() => null),
+          }
+        : null;
+    const memory = await page
+      .evaluate(() => {
+        const heap = (
+          performance as Performance & {
+            memory?: { usedJSHeapSize: number; totalJSHeapSize: number };
+          }
+        ).memory;
+        return heap
+          ? {
+              totalJSHeapBytes: heap.totalJSHeapSize,
+              usedJSHeapBytes: heap.usedJSHeapSize,
+            }
+          : null;
+      })
+      .catch(() => null);
 
     await writeFile(
       testInfo.outputPath(fileStem + '.json'),
@@ -242,8 +264,10 @@ async function exerciseSourceMap(
           consoleErrors,
           errors,
           mapsRevision,
+          memory,
           profile,
           source: sourceFixture,
+          tileObservations,
           timings,
           viewState: await map.getAttribute('data-map-view-state').catch(() => null),
         },
