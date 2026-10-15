@@ -21,7 +21,7 @@ services:
       start_period: 10s
 
   mailpit:
-    image: axllent/mailpit:latest
+    image: axllent/mailpit:latest@sha256:23fe39e81bde596a918000b3135c0f85dc8bb4c9ea6be274b051143f3e300387
     container_name: historical-source-atlas-mailpit
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 'true'
