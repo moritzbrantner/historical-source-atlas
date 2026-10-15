@@ -144,6 +144,12 @@ async function exerciseSourceMap(
     await waitForRealRenderer(page, backend);
     timings.startupToReadyMs = Date.now() - started;
 
+    const initialState = JSON.parse(
+      (await map.getAttribute('data-map-view-state')) ?? 'null',
+    );
+    expect(initialState?.center[0]).toBeCloseTo(sourceFixture.longitude, 2);
+    expect(initialState?.center[1]).toBeCloseTo(sourceFixture.latitude, 2);
+
     const popupStarted = Date.now();
     await clickCenter(page, page.locator('.source-page-map .mb-maps'), profile === 'mobile');
     await expect(map.getByText(sourceFixture.popup)).toBeVisible();
@@ -266,15 +272,42 @@ test('source map defaults to MapLibre and rejects unknown renderer values', asyn
   await waitForRealRenderer(page, 'maplibre');
 });
 
-test('renderer selection retains source and browser history', async ({ page }) => {
+test('renderer selection retains source, camera and browser history', async ({ page }) => {
   await page.goto(sourceUrl);
   const selector = page.getByRole('combobox', { name: 'Map engine' });
+  const map = page.locator('.source-page-map');
+  const surface = await waitForRealRenderer(page, 'maplibre');
+  const box = await surface.boundingBox();
+  expect(box).not.toBeNull();
+
+  const start = await map.getAttribute('data-map-view-state');
+  await page.mouse.move(box!.x + box!.width * 0.7, box!.y + box!.height * 0.7);
+  await page.mouse.down();
+  await page.mouse.move(
+    box!.x + box!.width * 0.7 - 70,
+    box!.y + box!.height * 0.7 - 30,
+    { steps: 8 },
+  );
+  await page.mouse.up();
+  await expect
+    .poll(() => map.getAttribute('data-map-view-state'))
+    .not.toBe(start);
+  const panned = JSON.parse(
+    (await map.getAttribute('data-map-view-state')) ?? 'null',
+  );
+
   await selector.selectOption('maps');
   await expect(page).toHaveURL(/mapBackend=maps/);
   await waitForRealRenderer(page, 'maps');
   await expect(
     page.getByRole('heading', { name: sourceFixture.label }),
   ).toBeVisible();
+  const selected = JSON.parse(
+    (await map.getAttribute('data-map-view-state')) ?? 'null',
+  );
+  expect(selected.center[0]).toBeCloseTo(panned.center[0], 2);
+  expect(selected.center[1]).toBeCloseTo(panned.center[1], 2);
+  expect(selected.zoom).toBeCloseTo(panned.zoom, 1);
 
   await page.goBack();
   await expect(selector).toHaveValue('maplibre');
@@ -283,8 +316,6 @@ test('renderer selection retains source and browser history', async ({ page }) =
   await page.goForward();
   await expect(selector).toHaveValue('maps');
   await waitForRealRenderer(page, 'maps');
-
-  await page.getByRole('button', { name: /Related Sources/i }).count();
 });
 
 test('source navigation keeps the engine while changing historical identity', async ({
