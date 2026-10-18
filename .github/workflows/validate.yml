@@ -19,6 +19,40 @@ env:
   GH_PACKAGES_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
 
 jobs:
+  validation-scope:
+    runs-on: ubuntu-latest
+    outputs:
+      audit: ${{ steps.scope.outputs.audit }}
+      allow-skipped: ${{ steps.scope.outputs.allow-skipped }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - id: scope
+        shell: python
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          import json
+          import os
+          import re
+          import subprocess
+
+          # GitHub path filters: '*' stays within a segment; '**' crosses segments.
+          def matches(path, pattern):
+              parts = re.split(r"(\*\*/|\*\*|\*|\?)", pattern)
+              expression = "".join({"**/": "(?:.*/)?", "**": ".*", "*": "[^/]*", "?": "[^/]"}.get(part, re.escape(part)) for part in parts)
+              return re.fullmatch(expression, path) is not None
+
+          required = False
+          if os.environ["GITHUB_EVENT_NAME"] == "pull_request":
+              paths = subprocess.check_output(["git", "diff", "--name-only", "--no-renames", "-z", os.environ["BASE_SHA"] + "..." + os.environ["HEAD_SHA"]]).decode().split("\0")
+              patterns = ['.github/workflows/foundation-audit.yml', '.repository-environment.toml', 'scripts/codex-environment.sh', '.coding-tooling.json', 'conventions.json', 'conventions.lock.json', '.conventions/**', 'renovate.json']
+              required = any(matches(path, pattern) for path in paths for pattern in patterns)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              print(f"audit={str(required).lower()}", file=output)
+              print(f"allow-skipped={json.dumps([] if required else ['foundation-audit'])}", file=output)
   foundation:
     name: Fast Validation
     permissions:
@@ -169,3 +203,29 @@ jobs:
           path: |
             test-results
             playwright-report
+
+  foundation-audit:
+    needs: validation-scope
+    if: needs.validation-scope.outputs.audit == 'true'
+    uses: ./.github/workflows/foundation-audit.yml
+
+  merge-ready:
+    name: ${{ github.event_name == 'pull_request' && 'merge-ready' || 'validation-summary' }}
+    if: always()
+    needs:
+      [
+        foundation,
+        integration,
+        storybook,
+        pages-export,
+        full,
+        validation-scope,
+        foundation-audit,
+      ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: moritzbrantner/reusable-workflows/.github/actions/merge-ready@b0f25f241d76af2584dfc9e375084ff5c5cb97da
+        with:
+          needs: ${{ toJSON(needs) }}
+          required: '["foundation", "integration", "storybook", "pages-export", "full", "validation-scope", "foundation-audit"]'
+          allow-skipped: ${{ needs.validation-scope.outputs.allow-skipped || '[]' }}

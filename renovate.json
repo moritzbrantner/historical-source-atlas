@@ -6,5 +6,6 @@
       "matchPackageNames": ["remotion", "@remotion/**"],
       "groupName": "remotion"
     }
-  ]
+  ],
+  "platformAutomerge": true
 }
