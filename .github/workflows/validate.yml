@@ -210,7 +210,7 @@ jobs:
     uses: ./.github/workflows/foundation-audit.yml
 
   merge-ready:
-    name: merge-ready
+    name: ${{ github.event_name == 'pull_request' && 'merge-ready' || 'validation-summary' }}
     if: always()
     needs:
       [
