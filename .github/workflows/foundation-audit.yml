@@ -1,16 +1,7 @@
 name: Foundation Fleet Audit
 
 on:
-  pull_request:
-    paths:
-      - .github/workflows/foundation-audit.yml
-      - .repository-environment.toml
-      - scripts/codex-environment.sh
-      - .coding-tooling.json
-      - conventions.json
-      - conventions.lock.json
-      - .conventions/**
-      - renovate.json
+  workflow_call:
   push:
     branches: [main]
     paths:
