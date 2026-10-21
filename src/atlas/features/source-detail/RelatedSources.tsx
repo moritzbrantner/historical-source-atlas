@@ -56,7 +56,7 @@ export function RelatedSources({
                 }}
               >
                 <span className="truncate">{relatedSource.label}</span>
-                <small className="truncate text-xs opacity-75">
+                <small className="truncate text-xs opacity-90">
                   {relatedSource.properties.period}
                 </small>
               </Button>

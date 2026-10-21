@@ -175,7 +175,7 @@ export function AtlasSidebar({
                     {sourceTagsBySourceId.get(source.id)!.length}
                   </span>
                 ) : null}
-                <small className="truncate text-xs opacity-75">
+                <small className="truncate text-xs opacity-90">
                   {getTimelineLabel(source, timelineMode)}
                 </small>
               </Button>

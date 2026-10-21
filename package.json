@@ -68,7 +68,7 @@
     "@moritzbrantner/app-pack": "workspace:*",
     "@moritzbrantner/app-pack-react": "workspace:*",
     "@moritzbrantner/maps": "^0.1.4",
-    "@moritzbrantner/ui": "^0.8.0",
+    "@moritzbrantner/ui": "github:moritzbrantner/ui#13500308265d358fa37bef1f9177654de031ae13",
     "@next/mdx": "^16.2.6",
     "@react-email/components": "1.0.12",
     "@react-email/render": "2.1.0",
@@ -129,5 +129,8 @@
     "vite": "^8.0.13",
     "vitest": "4.1.11"
   },
-  "packageManager": "bun@1.4.2"
+  "packageManager": "bun@1.4.2",
+  "trustedDependencies": [
+    "@moritzbrantner/ui"
+  ]
 }
