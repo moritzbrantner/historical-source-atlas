@@ -40,7 +40,7 @@ describe('scaffold-v2 contract', () => {
       'packages/app-pack',
       'packages/app-pack-react',
     ]);
-    expect(packageJson.dependencies['@moritzbrantner/ui']).toBe('^0.8.0');
+    expect(packageJson.dependencies['@moritzbrantner/ui']).toBe('^1.0.0');
     expect(packageJson.dependencies['@moritzbrantner/maps']).toBe('^0.1.4');
     expect(
       packageJson.dependencies['@moritzbrantner/storytelling'],

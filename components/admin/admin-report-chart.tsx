@@ -1,11 +1,7 @@
 'use client';
 
-import type { ChartConfig } from '@moritzbrantner/ui';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from '@moritzbrantner/ui';
+import type { ChartConfig } from './chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from './chart';
 import {
   Area,
   AreaChart,

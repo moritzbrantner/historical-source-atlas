@@ -1,10 +1,10 @@
+import { Button } from '@moritzbrantner/ui';
 import {
-  Button,
   Surface,
   SurfaceContent,
   SurfaceHeader,
   SurfaceTitle,
-} from '@moritzbrantner/ui';
+} from '@moritzbrantner/ui/shell';
 
 import { formatTimelineYear } from '../../entities/source/lib/sourceFormatting';
 import type { HistoricalSource } from '../../entities/source/model/sourceTypes';

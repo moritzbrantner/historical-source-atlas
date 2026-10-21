@@ -1,10 +1,10 @@
 'use client';
 
 import {
-  PlatformNavbar,
-  type PlatformNavbarGroup,
-  type PlatformNavbarRenderLinkProps,
-} from '@moritzbrantner/ui';
+  Navbar,
+  type NavbarGroup,
+  type NavbarRenderLinkProps,
+} from '@moritzbrantner/ui/shell';
 import NextLink from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
@@ -12,7 +12,7 @@ import type { ReactNode } from 'react';
 type LocaleShellNavbarProps = {
   brandHref: string;
   brandLabel: string;
-  groups: PlatformNavbarGroup[];
+  groups: NavbarGroup[];
   actions: ReactNode;
 };
 
@@ -23,7 +23,7 @@ function renderNavbarLink({
   onClick,
   disabled,
   'aria-current': ariaCurrent,
-}: PlatformNavbarRenderLinkProps) {
+}: NavbarRenderLinkProps) {
   if (!href || disabled) {
     return (
       <button
@@ -65,7 +65,7 @@ export function LocaleShellNavbar({
 
   return (
     <header className="sticky top-0 z-10 overflow-visible border-b border-zinc-200 bg-white/95 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950/95">
-      <PlatformNavbar
+      <Navbar
         key={pathname}
         aria-label="Primary navigation"
         brand={brand}
