@@ -1,4 +1,5 @@
-import { Checkbox, FilterBar } from '@moritzbrantner/ui';
+import { Checkbox } from '@moritzbrantner/ui';
+import { FilterBar } from '@moritzbrantner/ui/data';
 import { useId, useState } from 'react';
 
 import {

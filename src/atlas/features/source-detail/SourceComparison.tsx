@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { Badge, Button } from '@moritzbrantner/ui';
 import {
-  Badge,
-  Button,
   Surface,
   SurfaceContent,
   SurfaceHeader,
   SurfaceTitle,
-} from '@moritzbrantner/ui';
+} from '@moritzbrantner/ui/shell';
 
 import { sourceKindLabels } from '../../entities/source/model/sourceConstants';
 import type { HistoricalSource } from '../../entities/source/model/sourceTypes';

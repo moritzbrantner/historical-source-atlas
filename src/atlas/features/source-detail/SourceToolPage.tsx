@@ -1,14 +1,12 @@
 'use client';
 
+import { Badge, Button, LoadingState } from '@moritzbrantner/ui';
 import {
-  Badge,
-  Button,
-  LoadingState,
   PageContent,
   PageHeader,
   PageShell,
   PageTitle,
-} from '@moritzbrantner/ui';
+} from '@moritzbrantner/ui/shell';
 
 import { getSourcePath } from '../../app/routing';
 import {

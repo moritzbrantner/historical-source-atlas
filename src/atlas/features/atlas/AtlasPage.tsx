@@ -4,15 +4,17 @@ import { useMemo } from 'react';
 import {
   ErrorState,
   LoadingState,
+  StateViewDescription,
+  StateViewTitle,
+} from '@moritzbrantner/ui';
+import {
   PageActions,
   PageContent,
   PageDescription,
   PageHeader,
   PageShell,
   PageTitle,
-  StateViewDescription,
-  StateViewTitle,
-} from '@moritzbrantner/ui';
+} from '@moritzbrantner/ui/shell';
 
 import { useAtlasSourcesQuery } from '../../entities/source/api/sourceQueries';
 import type { SourceRepository } from '../../entities/source/api/sourceRepository';

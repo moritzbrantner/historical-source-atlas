@@ -1,11 +1,10 @@
 'use client';
 
+import { AccountMenu, NotificationMenu } from '@moritzbrantner/ui/shell';
 import {
-  AccountMenu,
   Button,
   defaultLanguageSwitcherLanguages,
   LanguageSwitcher,
-  NotificationMenu,
   ThemeModeSwitch,
 } from '@moritzbrantner/ui';
 import { useEffect, useState, useSyncExternalStore } from 'react';

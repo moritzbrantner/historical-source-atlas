@@ -1,4 +1,5 @@
-import { Badge, Button, Slider, Surface } from '@moritzbrantner/ui';
+import { Badge, Button, Slider } from '@moritzbrantner/ui';
+import { Surface } from '@moritzbrantner/ui/shell';
 
 import { formatTimelineYear } from '../../entities/source/lib/sourceFormatting';
 import type { YearRange } from '../../entities/source/lib/sourceFiltering';

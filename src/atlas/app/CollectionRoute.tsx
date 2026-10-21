@@ -1,6 +1,5 @@
+import { Badge, Button } from '@moritzbrantner/ui';
 import {
-  Badge,
-  Button,
   PageContent,
   PageDescription,
   PageHeader,
@@ -10,7 +9,7 @@ import {
   SurfaceContent,
   SurfaceHeader,
   SurfaceTitle,
-} from '@moritzbrantner/ui';
+} from '@moritzbrantner/ui/shell';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 

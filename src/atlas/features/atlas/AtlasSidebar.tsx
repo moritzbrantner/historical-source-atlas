@@ -1,11 +1,10 @@
+import { Badge, Button } from '@moritzbrantner/ui';
 import {
-  Badge,
-  Button,
   Surface,
   SurfaceContent,
   SurfaceHeader,
   SurfaceTitle,
-} from '@moritzbrantner/ui';
+} from '@moritzbrantner/ui/shell';
 import { Tag } from 'lucide-react';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 

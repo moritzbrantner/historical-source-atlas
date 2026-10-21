@@ -1,10 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { Badge, Button, LoadingState } from '@moritzbrantner/ui';
 import {
-  Badge,
-  Button,
-  LoadingState,
   PageContent,
   PageHeader,
   PageShell,
@@ -13,7 +11,7 @@ import {
   SurfaceContent,
   SurfaceHeader,
   SurfaceTitle,
-} from '@moritzbrantner/ui';
+} from '@moritzbrantner/ui/shell';
 
 import { getEntityPath } from '../../app/entityRouting';
 import type { EntityType } from '../../domain/dataModel';

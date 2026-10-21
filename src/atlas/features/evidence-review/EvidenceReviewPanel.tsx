@@ -1,12 +1,12 @@
 'use client';
 
+import { LoadingState } from '@moritzbrantner/ui';
 import {
-  LoadingState,
   Surface,
   SurfaceContent,
   SurfaceHeader,
   SurfaceTitle,
-} from '@moritzbrantner/ui';
+} from '@moritzbrantner/ui/shell';
 import { useEffect, useMemo, useState } from 'react';
 
 import { useEvidenceReviewQuery } from '../../entities/evidence/api/evidenceQueries';
