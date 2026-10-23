@@ -16,7 +16,7 @@ The Next.js foundation also contains account/admin routes and an inherited `apps
 
 ## Local development
 
-Use Bun 1.4.2, as declared in `package.json`:
+Use the latest stable Bun (`package.json` declares a minimum):
 
 ```bash
 cp .env.example .env
