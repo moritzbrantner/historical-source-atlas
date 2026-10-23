@@ -3,11 +3,13 @@
 import {
   defaultLanguageSwitcherLanguages,
   LanguageSwitcher,
-  PlatformNavbar,
-  type PlatformNavbarGroup,
-  type PlatformNavbarRenderLinkProps,
   ThemeModeSwitch,
 } from '@moritzbrantner/ui';
+import {
+  Navbar,
+  type NavbarGroup,
+  type NavbarRenderLinkProps,
+} from '@moritzbrantner/ui/shell';
 import NextLink from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
@@ -26,7 +28,7 @@ import {
   type Theme,
 } from '@/lib/theme';
 
-function getAtlasNavigationGroups(locale: AppLocale): PlatformNavbarGroup[] {
+function getAtlasNavigationGroups(locale: AppLocale): NavbarGroup[] {
   return [
     {
       id: 'explore',
@@ -130,7 +132,7 @@ function renderAtlasNavbarLink({
   onClick,
   disabled,
   'aria-current': ariaCurrent,
-}: PlatformNavbarRenderLinkProps) {
+}: NavbarRenderLinkProps) {
   if (!href || disabled) {
     return (
       <button
@@ -231,7 +233,7 @@ function AtlasTopNavbar({ locale }: { locale: AppLocale }) {
 
   return (
     <header className="sticky top-0 z-20 overflow-visible border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
-      <PlatformNavbar
+      <Navbar
         key={pathname}
         aria-label="Primary navigation"
         brand={brand}

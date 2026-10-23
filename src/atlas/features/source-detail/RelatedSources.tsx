@@ -1,10 +1,10 @@
+import { Button } from '@moritzbrantner/ui';
 import {
-  Button,
   Surface,
   SurfaceContent,
   SurfaceHeader,
   SurfaceTitle,
-} from '@moritzbrantner/ui';
+} from '@moritzbrantner/ui/shell';
 
 import { formatTimelineYear } from '../../entities/source/lib/sourceFormatting';
 import type { HistoricalSource } from '../../entities/source/model/sourceTypes';
@@ -56,7 +56,7 @@ export function RelatedSources({
                 }}
               >
                 <span className="truncate">{relatedSource.label}</span>
-                <small className="truncate text-xs opacity-75">
+                <small className="truncate text-xs opacity-90">
                   {relatedSource.properties.period}
                 </small>
               </Button>

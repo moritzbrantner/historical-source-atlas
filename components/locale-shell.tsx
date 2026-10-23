@@ -1,4 +1,5 @@
-import { PageContent, type PlatformNavbarGroup } from '@moritzbrantner/ui';
+import { PageContent } from '@moritzbrantner/ui/shell';
+import { type NavbarGroup } from '@moritzbrantner/ui/shell';
 import type { ReactNode } from 'react';
 import { Suspense } from 'react';
 
@@ -112,7 +113,7 @@ export async function LocaleShell({
   const t = createTranslator(locale, 'NavigationBar');
   const languageT = createTranslator(locale, 'LanguageSelector');
   const themeT = createTranslator(locale, 'ThemeToggle');
-  const navigationGroups: PlatformNavbarGroup[] = buildNavigationCategories({
+  const navigationGroups: NavbarGroup[] = buildNavigationCategories({
     isAuthenticated: Boolean(resolvedSession?.user?.id),
     role: resolvedSession?.user?.role,
     permissionSet,

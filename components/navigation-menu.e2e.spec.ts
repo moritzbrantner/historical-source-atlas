@@ -12,7 +12,7 @@ test('navbar groups destinations into categories and reveals submenu links on cl
 }) => {
   await loginWithCredentials(page, memberUser.email, memberUser.password);
   await gotoAndWaitForHydration(page, '/en');
-  const discoverSubmenu = page.locator('[data-slot="platform-navbar-submenu"]');
+  const discoverSubmenu = page.locator('[data-slot="navbar-submenu"]');
 
   await expect(page.getByRole('button', { name: 'Discover' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Social' })).toBeVisible();

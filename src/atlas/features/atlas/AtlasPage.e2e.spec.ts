@@ -90,10 +90,12 @@ test('source kind filters update the visible source list', async ({ page }) => {
 
   await expect(page.getByText('3 visible', { exact: true })).toBeVisible();
   await expect(
-    page.getByRole('button', { name: 'Clear sourceKinds filter' }),
+    page.getByRole('button', { name: /^Clear filter: Source type scope/ }),
   ).toBeVisible();
 
-  await page.getByRole('button', { name: 'Clear sourceKinds filter' }).click();
+  await page
+    .getByRole('button', { name: /^Clear filter: Source type scope/ })
+    .click();
   await expect(
     page.getByText('4 visible sources', { exact: true }),
   ).toBeVisible();

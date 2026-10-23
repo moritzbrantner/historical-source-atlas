@@ -8,7 +8,7 @@ import {
   SurfaceContent,
   SurfaceHeader,
   SurfaceTitle,
-} from '@moritzbrantner/ui';
+} from '@moritzbrantner/ui/shell';
 
 import { historicalSources } from '../entities/source/api/staticSourceData';
 

@@ -40,7 +40,10 @@ describe('scaffold-v2 contract', () => {
       'packages/app-pack',
       'packages/app-pack-react',
     ]);
-    expect(packageJson.dependencies['@moritzbrantner/ui']).toBe('^0.8.0');
+    // Owner packages are consumed as commit-pinned git dependencies.
+    expect(packageJson.dependencies['@moritzbrantner/ui']).toMatch(
+      /^github:moritzbrantner\/ui#[0-9a-f]{40}$/,
+    );
     expect(packageJson.dependencies['@moritzbrantner/maps']).toBe('^0.1.4');
     expect(
       packageJson.dependencies['@moritzbrantner/storytelling'],

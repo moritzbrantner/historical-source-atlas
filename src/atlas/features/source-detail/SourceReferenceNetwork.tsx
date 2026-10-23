@@ -3,7 +3,7 @@ import {
   SurfaceContent,
   SurfaceHeader,
   SurfaceTitle,
-} from '@moritzbrantner/ui';
+} from '@moritzbrantner/ui/shell';
 import Link from 'next/link';
 
 import { getEntityPath } from '../../app/entityRouting';
