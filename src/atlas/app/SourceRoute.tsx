@@ -3,6 +3,7 @@
 import { useRouter } from '@/i18n/navigation';
 
 import { SourcePage } from '../features/source-detail/SourcePage';
+import { sourcePathWithMapBackend } from '../features/source-detail/mapBackend';
 import {
   SourceToolPage,
   type SourceToolPageKind,
@@ -29,7 +30,9 @@ export function SourceRoute({ sourceId }: { sourceId: string }) {
         router.push(getSourceReferenceNetworkPath(sourceId));
       }}
       onOpenSource={(nextSourceId) => {
-        router.push(getSourcePath(nextSourceId));
+        router.push(
+          sourcePathWithMapBackend(getSourcePath(nextSourceId), window.location.search),
+        );
       }}
     />
   );

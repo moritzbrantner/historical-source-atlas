@@ -194,6 +194,16 @@ jobs:
       - name: Run e2e tests
         run: ./scripts/ci/run-e2e.sh
 
+      - name: Upload renderer comparison evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          if-no-files-found: ignore
+          name: source-map-renderer-comparison
+          path: |
+            test-results/**/renderer-comparison-*.png
+            test-results/**/renderer-comparison-*.json
+
       - name: Upload Playwright artifacts
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
