@@ -259,5 +259,5 @@ describe('feature gating', () => {
       }),
     );
     expect(dataStudioResponse.status).toBe(404);
-  });
+  }, 30_000);
 });

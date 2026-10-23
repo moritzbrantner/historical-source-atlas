@@ -118,6 +118,11 @@ export const githubPagesNextConfig: NextConfig = {
   },
   output: 'export',
   trailingSlash: true,
+  // The export build stashes server-only routes; tests that import them are
+  // still type-checked by `bun run typecheck` against the full tsconfig.
+  typescript: {
+    tsconfigPath: 'tsconfig.gh-pages.json',
+  },
 };
 
 const nextConfig =
