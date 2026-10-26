@@ -68,7 +68,7 @@
     "@moritzbrantner/app-pack": "workspace:*",
     "@moritzbrantner/app-pack-react": "workspace:*",
     "@moritzbrantner/maps": "^0.1.4",
-    "@moritzbrantner/ui": "github:moritzbrantner/ui#5abb78e3d012485f24f51f38612145f3c896df05",
+    "@moritzbrantner/ui": "github:moritzbrantner/ui#a0abbd5821c3e6698c0498059a7fbb0aa86c83d5",
     "@next/mdx": "^16.2.6",
     "@react-email/components": "1.0.12",
     "@react-email/render": "2.1.1",
