@@ -97,7 +97,7 @@
     "remotion": "4.0.539",
     "supercluster": "^9.0.0",
     "swapy": "^1.0.5",
-    "three": "^0.186.0",
+    "three": "^0.187.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -115,7 +115,7 @@
     "@types/pg": "8.23.1",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
-    "@types/three": "0.186.0",
+    "@types/three": "0.187.0",
     "@unlighthouse/cli": "0.19.1",
     "@vitest/browser-playwright": "4.1.12",
     "drizzle-kit": "0.31.11",
