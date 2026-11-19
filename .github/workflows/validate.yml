@@ -58,7 +58,7 @@ jobs:
     permissions:
       contents: read
       packages: read
-    uses: moritzbrantner/reusable-workflows/.github/workflows/coding-tooling-validation.yml@3b01b02c90cd295e6a395a15255ae540848bc714
+    uses: moritzbrantner/reusable-workflows/.github/workflows/coding-tooling-validation.yml@361ab6f0fbb98e0387070fb9b694be6067fa3b3f
     with:
       tier: fast
       strict: true
