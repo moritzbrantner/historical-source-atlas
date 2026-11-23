@@ -36,7 +36,7 @@ V1 and v2 coexist during migration. Add v2 modules beside v1 and translate throu
 
 ## Commands
 
-Use the latest stable Bun, matching CI; `packageManager` is a minimum.
+Use the latest stable Bun, matching CI; the repository declares no Bun version and `bun.lock` keeps dependencies frozen.
 
 ```bash
 bun install --frozen-lockfile
