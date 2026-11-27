@@ -224,7 +224,7 @@ jobs:
       ]
     runs-on: ubuntu-latest
     steps:
-      - uses: moritzbrantner/reusable-workflows/.github/actions/merge-ready@3b01b02c90cd295e6a395a15255ae540848bc714
+      - uses: moritzbrantner/reusable-workflows/.github/actions/merge-ready@5b171742843ac37864c3b39f38c080466a07426c
         with:
           needs: ${{ toJSON(needs) }}
           required: '["foundation", "integration", "storybook", "pages-export", "full", "validation-scope", "foundation-audit"]'
